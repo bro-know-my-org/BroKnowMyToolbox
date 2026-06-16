@@ -1,0 +1,7 @@
+// SCSS 保留做开发期样式组织；运行时可变主题值使用 CSS Variables。
+$title-bar-height: 48px;
+
+:root {
+  --bkm-title-bar-height: #{$title-bar-height};
+  --title-bar-height: var(--bkm-title-bar-height);
+}
