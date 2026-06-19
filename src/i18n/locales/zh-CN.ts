@@ -92,6 +92,7 @@ export default {
         analyzing: "Agent 分析中",
         done: "Agent 分析完成",
         failed: "Agent 分析失败",
+        canceled: "Agent 分析已中止",
       },
     },
   },

@@ -92,6 +92,7 @@ export default {
         analyzing: "Agent analyzing",
         done: "Agent complete",
         failed: "Agent failed",
+        canceled: "Agent canceled",
       },
     },
   },

@@ -33,7 +33,8 @@ type SparkStatusKey =
   | "textLoaded"
   | "analyzing"
   | "done"
-  | "failed";
+  | "failed"
+  | "canceled";
 
 const { t } = useAppI18n();
 const settingsStore = useSettingsStore();
