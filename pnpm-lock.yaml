@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@bro-know-my/spark-analyzer':
-        specifier: ^0.0.3
-        version: 0.0.3(@vicons/fa@0.13.0)(@vicons/fluent@0.13.0)(naive-ui@2.44.1(vue@3.5.30(typescript@5.6.3)))(vue@3.5.30(typescript@5.6.3))
+        specifier: ^0.0.5
+        version: 0.0.5(@vicons/fa@0.13.0)(@vicons/fluent@0.13.0)(naive-ui@2.44.1(vue@3.5.30(typescript@5.6.3)))(vue@3.5.30(typescript@5.6.3))
       '@tauri-apps/api':
         specifier: ^2
         version: 2.10.1
@@ -98,8 +98,8 @@ packages:
     resolution: {integrity: sha512-LwdZHpScM4Qz8Xw2iKSzS+cfglZzJGvofQICy7W7v4caru4EaAmyUuO6BGrbyQ2mYV11W0U8j5mBhd14dd3B0A==}
     engines: {node: '>=6.9.0'}
 
-  '@bro-know-my/spark-analyzer@0.0.3':
-    resolution: {integrity: sha512-E+Jg74Cae0n0zxbNIhwdXrI/gTj+6C9xAyvm852rBq7Adjr/F5nXmvPmuSydx7iMOTa6+UPYm7GdBZHtXnRvLA==}
+  '@bro-know-my/spark-analyzer@0.0.5':
+    resolution: {integrity: sha512-pv4AN6qtYi9evGD1URdrzIYTRmID6zpB1P2EB/mSKugDK0C90p/iXE8DBMnJiNelVZWGbX4GWnN33aJJ5Rbfug==}
     peerDependencies:
       '@vicons/fa': ^0.13.0
       '@vicons/fluent': ^0.13.0
@@ -1092,7 +1092,7 @@ snapshots:
       '@babel/helper-string-parser': 7.27.1
       '@babel/helper-validator-identifier': 7.28.5
 
-  '@bro-know-my/spark-analyzer@0.0.3(@vicons/fa@0.13.0)(@vicons/fluent@0.13.0)(naive-ui@2.44.1(vue@3.5.30(typescript@5.6.3)))(vue@3.5.30(typescript@5.6.3))':
+  '@bro-know-my/spark-analyzer@0.0.5(@vicons/fa@0.13.0)(@vicons/fluent@0.13.0)(naive-ui@2.44.1(vue@3.5.30(typescript@5.6.3)))(vue@3.5.30(typescript@5.6.3))':
     dependencies:
       '@vicons/fa': 0.13.0
       '@vicons/fluent': 0.13.0
