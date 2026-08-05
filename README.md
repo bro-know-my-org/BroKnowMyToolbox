@@ -11,6 +11,30 @@ This repository is the forward-looking refactor line for the toolbox. The produc
 
 It intentionally does not rebuild the old runtime plugin platform. Do not add external plugin manifest loading, install/uninstall flows, permission grants, generated plugin bundles, or a WASM runtime unless that direction is explicitly reopened.
 
+## Spark Analyzer Integration
+
+Spark Analyzer is a built-in Toolbox page, but its implementation is shared with the standalone BroKnowMySparkAnalyzer application:
+
+```text
+@bro-know-my/spark-analyzer   Vue UI and Tauri adapter
+bkmsa-tauri                   native Tauri plugin
+bkmsa-core / bkmsa-agent      parsing, tools, diagnostics and AI agent
+```
+
+Toolbox registers `bkmsa_tauri::init()` and grants `bkmsa-tauri:default`. The frontend creates its adapter through `@bro-know-my/spark-analyzer/tauri`. Do not recreate report parsing, AI transport, or analyzer state under `src-tauri/src/commands`; changes to analysis semantics belong in the BroKnowMySparkAnalyzer Rust crates.
+
+The npm UI and Rust plugin use matching release versions. For example:
+
+```json
+"@bro-know-my/spark-analyzer": "^0.1.0"
+```
+
+```toml
+bkmsa-tauri = "0.1.0"
+```
+
+Version `0.1.0` is published to both npm and crates.io, so a normal dependency install resolves the shared frontend adapter and native plugin without repository-local links.
+
 ## UI Direction
 
 The initial shell borrows the dense dark workbench style from `BroKnowMySparkAnalyzer`:
@@ -35,6 +59,8 @@ Rust check:
 cd src-tauri
 cargo check
 ```
+
+When changing the embedded analyzer integration, run both the frontend build and Rust check. The standalone Analyzer repository owns the shared SDK release pipeline.
 
 ## Adding A Built-In Tool
 

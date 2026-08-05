@@ -5,6 +5,7 @@
   "windows": ["main"],
   "permissions": [
     "core:default",
+    "bkmsa-tauri:default",
     "opener:default",
     "dialog:default",
     "dialog:allow-save",
