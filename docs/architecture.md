@@ -34,7 +34,7 @@ packages/
 docs/
 ```
 
-避免为了结构图创建只有转发代码的浅模块。Spark Analyzer 保留在独立仓库，正式发布通过已发布 npm 包和 Rust crates 集成；当前开发阶段的 sibling path/file 依赖只用于验证尚未发布的 host-authorizer 与 keyring 修复，不能作为发布依赖。
+避免为了结构图创建只有转发代码的浅模块。Spark Analyzer 保留在独立仓库，通过精确固定为 `0.1.2` 的已发布 npm 包和 Rust crates 集成；构建不需要相邻工作树。
 
 ## 工具目录
 

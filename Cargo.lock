@@ -340,6 +340,8 @@ dependencies = [
 [[package]]
 name = "bkmsa-agent"
 version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cdb3c73c5c0c453f233564707d409a796d354b07b09f2333144d9d82a2dfe729"
 dependencies = [
  "async-trait",
  "bkmsa-core",
@@ -353,6 +355,8 @@ dependencies = [
 [[package]]
 name = "bkmsa-core"
 version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5f288b05999e9ccee7997566d8db6a7e497481df4eee6445182b004197b39977"
 dependencies = [
  "chrono",
  "prost",
@@ -366,6 +370,8 @@ dependencies = [
 [[package]]
 name = "bkmsa-tauri"
 version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a7b9f803102e062d2c78eadc9e4f312b9cd94760eaf1e91b7f30f1d4200a960c"
 dependencies = [
  "base64 0.22.1",
  "bkmsa-agent",

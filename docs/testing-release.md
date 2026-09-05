@@ -35,4 +35,4 @@
 
 `.github/workflows/release.yml` 在 `v*` tag 上先执行完整质量门禁，再构建 Windows x64、Linux x64、macOS x64 和 macOS arm64。构建结果先进入 draft release；脚本从同一批二进制生成便携包、`SHA256SUMS`、release manifest 及三个渠道文件。维护者核对未签名说明和冒烟证据后才手动发布，详见 [发布操作](./releasing.md)。
 
-当前 Spark npm UI 使用 sibling file 依赖，Rust crates 使用 sibling path，因此 CI 会把 Spark Analyzer checkout 到相邻目录并先构建 UI 包。该接法只服务于修复发布前的集成验证；正式 Toolbox release 必须先把 npm 与 Rust 依赖一起切到已发布的修复版本。
+Spark npm UI 和 Rust crates 均精确固定到已发布的 `0.1.2`，CI 与 release 只 checkout Toolbox，并使用两份锁文件安装 registry 依赖，不再 checkout 或构建 sibling Spark。

@@ -41,8 +41,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/tool-contract
       "@bro-know-my/spark-analyzer":
-        specifier: file:../../../BroKnowMySparkAnalyzer/packages/spark-analyzer
-        version: file:../BroKnowMySparkAnalyzer/packages/spark-analyzer(@tauri-apps/api@2.11.1)(@tauri-apps/plugin-dialog@2.7.2)(@tauri-apps/plugin-opener@2.5.4)(@vicons/fa@0.13.0)(@vicons/fluent@0.13.0)(naive-ui@2.45.3(vue@3.5.42(typescript@5.6.3)))(vue@3.5.42(typescript@5.6.3))
+        specifier: 0.1.2
+        version: 0.1.2(@tauri-apps/api@2.11.1)(@tauri-apps/plugin-dialog@2.7.2)(@tauri-apps/plugin-opener@2.5.4)(@vicons/fa@0.13.0)(@vicons/fluent@0.13.0)(naive-ui@2.45.3(vue@3.5.42(typescript@5.6.3)))(vue@3.5.42(typescript@5.6.3))
       "@tauri-apps/api":
         specifier: ^2.11.0
         version: 2.11.1
@@ -164,11 +164,10 @@ packages:
       }
     engines: { node: ">=6.9.0" }
 
-  "@bro-know-my/spark-analyzer@file:../BroKnowMySparkAnalyzer/packages/spark-analyzer":
+  "@bro-know-my/spark-analyzer@0.1.2":
     resolution:
       {
-        directory: ../BroKnowMySparkAnalyzer/packages/spark-analyzer,
-        type: directory,
+        integrity: sha512-by4ggmxYEkTVvTiwZB6ARxQHZ28/DqIH68QbgPsrmt86zANthwq0ivhXSuP0PRAa75zaMV/KkiYyC3K4xjOR2Q==,
       }
     peerDependencies:
       "@tauri-apps/api": ^2
@@ -3831,7 +3830,7 @@ snapshots:
       "@babel/helper-string-parser": 7.29.7
       "@babel/helper-validator-identifier": 7.29.7
 
-  "@bro-know-my/spark-analyzer@file:../BroKnowMySparkAnalyzer/packages/spark-analyzer(@tauri-apps/api@2.11.1)(@tauri-apps/plugin-dialog@2.7.2)(@tauri-apps/plugin-opener@2.5.4)(@vicons/fa@0.13.0)(@vicons/fluent@0.13.0)(naive-ui@2.45.3(vue@3.5.42(typescript@5.6.3)))(vue@3.5.42(typescript@5.6.3))":
+  "@bro-know-my/spark-analyzer@0.1.2(@tauri-apps/api@2.11.1)(@tauri-apps/plugin-dialog@2.7.2)(@tauri-apps/plugin-opener@2.5.4)(@vicons/fa@0.13.0)(@vicons/fluent@0.13.0)(naive-ui@2.45.3(vue@3.5.42(typescript@5.6.3)))(vue@3.5.42(typescript@5.6.3))":
     dependencies:
       "@vicons/fa": 0.13.0
       "@vicons/fluent": 0.13.0

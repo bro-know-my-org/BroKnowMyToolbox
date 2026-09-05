@@ -5,8 +5,6 @@ Read [AGENTS.md](./AGENTS.md), [CONTEXT.md](./CONTEXT.md), and the [tool develop
 ## Development checks
 
 ```bash
-pnpm --dir ../BroKnowMySparkAnalyzer install --frozen-lockfile
-pnpm --dir ../BroKnowMySparkAnalyzer --filter @bro-know-my/spark-analyzer build
 pnpm install --frozen-lockfile
 pnpm run format:check
 pnpm run lint
@@ -18,7 +16,7 @@ cargo test --workspace --all-targets
 cargo clippy --workspace --all-targets -- -D warnings
 ```
 
-The current Spark npm and Rust dependencies use a sibling checkout at `../BroKnowMySparkAnalyzer`. Until the fixed Spark release is published, clone that repository beside this one, build its UI package before installing Toolbox dependencies, and preserve its documented keyring features.
+Spark npm and Rust dependencies are pinned to the published `0.1.2` release. No sibling checkout or Spark UI build is required. Preserve the documented keyring features when updating these dependencies.
 
 Tools are compile-time modules. Contributions must not add runtime plugin installation, generic native action dispatch, or external manifest scanning.
 

@@ -4,7 +4,7 @@
 
 ## 当前进度（2026-09-05）
 
-- Spark Analyzer 工作树已启用三平台 keyring backend，并通过本机跨 Entry、跨进程测试；三平台 CI 与新版本发布尚待完成。
+- Spark Analyzer 三平台 CI（含真实凭据持久化）及 `v0.1.2` 发布已完成；Toolbox 正在验证切换后的正式 registry 依赖，证据见 [验收进度](./review-release-status.md)。
 - Phase 1 workspace、`bkmt --version`、Vue/Tauri 桌面壳、前后端测试和 CI 配置已落地。
 - 文件生成器共享核心已实现 v1 JSON 模板、变量默认值/必填校验、安全生成计划、冲突/覆盖、逐文件结果和 capability-based 防越界写入；GUI 与 `bkmt file create` 已接入计划、执行、授权、dry-run、force、JSON 及分级结果。
 - 产品壳已采用固定侧栏工作台：正式首页、工具页共用侧栏与顶栏，并实现工具目录、收藏、最近使用和键盘优先命令面板；临时方案切换代码已移除。
@@ -15,7 +15,7 @@
 - 桌面配置 IPC 使用 camelCase DTO 与 TypeScript 契约对齐，核心配置模型及磁盘 TOML 继续使用 snake_case，避免传输格式改动破坏已有配置文件。
 - 配置和授权文件使用有界跨进程锁，锁争用会在 500ms 后返回诊断错误；配置测试通过多个真实子进程验证原子写入。
 - CLI 已将原先集中在单个入口文件的参数、错误、运行时能力、文件命令和 Spark 命令按内部 seam 拆分；进程入口保持最小，现有 CLI 契约由端到端测试覆盖。
-- Spark GUI 已嵌入 sibling 修复版 npm UI 和 Tauri plugin；`bkmt spark` 已直接复用 `bkmsa-core`/`bkmsa-agent` 实现工具目录、报告解析、确定性工具和 AI 分析。正式发布前两类依赖都必须切到已发布修复版本。
+- Spark GUI 已嵌入已发布 `0.1.2` 的 npm UI 和 Tauri plugin；`bkmt spark` 直接复用同版本 `bkmsa-core`/`bkmsa-agent` 实现工具目录、报告解析、确定性工具和 AI 分析，不依赖相邻源码。
 - Spark GUI 的网络、凭据和导出操作已通过上游 host authorizer seam 接入 Toolbox Rust 授权，并具有允许/拒绝/自动重试体验。
 - Spark 宿主测试已覆盖 Toolbox authorizer 装入真实 Tauri plugin 后的 IPC 阻断/放行，以及页面授权弹窗、持久化和自动重试流程。
 - Spark 的语言与主题由 Toolbox 设置控制，AI provider/model/temperature 等非敏感偏好通过显式 store seam 写入共享数据根；Toolbox 嵌入模式不再依赖 WebView `localStorage`。

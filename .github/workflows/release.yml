@@ -19,7 +19,6 @@ permissions:
 
 env:
   TOOLBOX_DIR: BroKnowMyToolbox
-  SPARK_DIR: BroKnowMySparkAnalyzer
 
 jobs:
   validate:
@@ -36,11 +35,6 @@ jobs:
         with:
           path: BroKnowMyToolbox
           ref: ${{ inputs.tag || github.ref }}
-
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-        with:
-          repository: bro-know-my-org/BroKnowMySparkAnalyzer
-          path: BroKnowMySparkAnalyzer
 
       - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
         with:
@@ -62,9 +56,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libayatana-appindicator3-dev libwebkit2gtk-4.1-dev librsvg2-dev patchelf
 
-      - name: Build the sibling Spark UI package
-        working-directory: BroKnowMySparkAnalyzer
-        run: pnpm install --frozen-lockfile && pnpm --filter @bro-know-my/spark-analyzer build
       - run: pnpm install --frozen-lockfile
       - name: Verify the tag matches every workspace version
         env:
@@ -124,11 +115,6 @@ jobs:
           path: BroKnowMyToolbox
           ref: ${{ needs.validate.outputs.revision }}
 
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-        with:
-          repository: bro-know-my-org/BroKnowMySparkAnalyzer
-          path: BroKnowMySparkAnalyzer
-
       - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
         with:
           version: 11.0.9
@@ -155,9 +141,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libayatana-appindicator3-dev libwebkit2gtk-4.1-dev librsvg2-dev patchelf xvfb
 
-      - name: Build the sibling Spark UI package
-        working-directory: BroKnowMySparkAnalyzer
-        run: pnpm install --frozen-lockfile && pnpm --filter @bro-know-my/spark-analyzer build
       - run: pnpm install --frozen-lockfile
       - run: cargo build --locked --release -p bkmt-cli --target ${{ matrix.target }}
       - run: pnpm tauri build --target ${{ matrix.target }}

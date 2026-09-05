@@ -25,11 +25,6 @@ jobs:
         with:
           path: BroKnowMyToolbox
 
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-        with:
-          repository: bro-know-my-org/BroKnowMySparkAnalyzer
-          path: BroKnowMySparkAnalyzer
-
       - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
         with:
           version: 11.0.9
@@ -39,14 +34,6 @@ jobs:
           node-version: "22"
           cache: pnpm
           cache-dependency-path: BroKnowMyToolbox/pnpm-lock.yaml
-
-      - name: Install Spark dependencies
-        working-directory: BroKnowMySparkAnalyzer
-        run: pnpm install --frozen-lockfile
-
-      - name: Build the sibling Spark UI package
-        working-directory: BroKnowMySparkAnalyzer
-        run: pnpm --filter @bro-know-my/spark-analyzer build
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -81,11 +68,6 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           path: BroKnowMyToolbox
-
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-        with:
-          repository: bro-know-my-org/BroKnowMySparkAnalyzer
-          path: BroKnowMySparkAnalyzer
 
       - uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4
         with:

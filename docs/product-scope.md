@@ -18,7 +18,7 @@ Bro Know My Toolbox 是面向个人用户、普通桌面用户和贡献者的跨
 
 ### Spark Analyzer
 
-- GUI 集成 `@bro-know-my/spark-analyzer` 的修复版本；发布前本地验证允许使用 sibling file 依赖，正式 Toolbox release 必须固定到已发布版本。
+- GUI 集成已发布的 `@bro-know-my/spark-analyzer 0.1.2`；npm 与 Rust 依赖精确固定版本，不依赖 sibling 工作树。
 - 原生端集成 `bkmsa-tauri`，CLI 复用 `bkmsa-core` 和 `bkmsa-agent`。
 - Toolbox 负责宿主导航、主题、权限、配置路径和错误呈现；Spark 项目拥有分析逻辑。
 
