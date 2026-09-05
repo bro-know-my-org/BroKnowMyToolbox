@@ -4,12 +4,13 @@
 
 ## 当前外部前置条件
 
-2026-09-05 复核：GitHub API 身份验证返回 401，需维护者在本机恢复登录。Spark 仍为 `7a04edc`，所需修复仍在独立工作树中，公开 npm 和 Rust crates 最新版本均为 `0.1.1`，不包含这些修复。维护者已授权自行安排本轮所需处理；只推进 Toolbox 发版必需修复及最小补丁版本，Spark 未来的大重构明确不在本轮范围。独立提交与发布尚未完成，不能把本地 sibling 依赖直接当成可发布版本。技术阻断详见 [风险](./risks.md)。
+2026-09-05 复核：GitHub API 身份验证仍返回 401，需维护者在本机恢复登录。Spark 必需修复已在独立分支 `fix/toolbox-host-integration` 提交为 `e31a366`，尚未推送或发布。公开 npm 包与 crates sparse index 中的 `bkmsa-tauri` 最新均为 `0.1.1`，不包含这些修复；候选补丁版为 `0.1.2`，当前未修改版本或创建 tag。维护者已授权自行安排本轮所需处理；只推进 Toolbox 发版必需修复及最小补丁版本，Spark 未来的大重构明确不在本轮范围。不能把本地 sibling 依赖直接当成可发布版本。技术阻断详见 [风险](./risks.md)。
 
 另以禁止交互的 `git push --dry-run origin HEAD:refs/heads/refactor/rebuild` 验证 Git HTTPS 传输：返回无法读取 Username（exit 128），没有真实推送或远程变更；不能绕过 GitHub API 的认证问题直接完成 Git 推送。
 
 ## 已完成批次
 
+- Spark 宿主接入修补 `e31a366`：Rust 宿主授权、真实平台凭据后端、两套 Cargo 锁文件、受控主题/语言及宿主配置存储已独立提交。OCR 共四轮，修复延迟加载覆盖编辑、保存错配密钥/地址、交叉保存、模型/温度编辑漏载凭据，并补齐各 AI 命令的双能力拒绝测试；最终会话 `bde9c9e9-e69c-4f20-9daf-d6cd5991d76a` 对 10 个选中文件零意见。97 项 Rust 测试、10 项 Vue 组件回归、工作区和独立 Tauri Clippy、格式、UI 包与独立前端构建、npm pack dry-run、离线冻结安装通过。两个默认忽略的真实凭据测试已另在隔离 DBus/XDG 环境显式执行，通过重新打开与新进程持久化验证；不构成 Windows/macOS 实测证据。未重构 SA 原有大组件，新增测试文件分别为 283 行与 178 行。下一步恢复认证后推进 Spark PR/CI、统一 `0.1.2` 版本及内部依赖约束、发布并核实 npm/Cargo 产物，再固定 Toolbox 依赖并重新验收；不能仅凭这个提交关闭发布门禁。
 - 当前源码 `552030d` 的 Linux 本地集成构建、三个包的 staging 与 CLI/桌面启动冒烟通过；[验收记录](./validation/linux-release-552030d.md)包含确切 revision、范围、产物 SHA-256 和未完成门禁。这些产物含未发布的 Spark 工作树依赖，不可作为正式 Release。
 - 基线 `0289b0a`：以 ReBuild 源码接续正式仓库历史，未推送。基线 OCR 会话 `b687718d-7760-416b-940f-088c506ba124` 提出 39 条意见，尚未全部收口。
 - CLI 修复 `b1a409d`：统一参数解析的 JSON 错误，保留 help/version 输出；模板目录读取错误不再被忽略；补齐报告大小、符号链接和 FIFO 输入测试。OCR 两轮，最终会话 `21e11040-129c-4004-8449-eb2c5a1aa4df` 零意见；本机 CLI 32 项测试、Clippy、格式及文档检查通过。Windows/macOS 实测仍须 CI 补齐。
