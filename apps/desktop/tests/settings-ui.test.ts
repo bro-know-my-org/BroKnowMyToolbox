@@ -168,3 +168,51 @@ test("download launch failures remain visible in the settings drawer", async () 
 
   expect(await screen.findByText("opener unavailable")).toBeTruthy();
 });
+
+test("an in-flight settings save blocks duplicate submission and closing", async () => {
+  const original = native.invoke.getMockImplementation()!;
+  let finishSave!: () => void;
+  native.invoke.mockImplementation((command: string, ...args: unknown[]) => {
+    if (command === "save_app_config_command")
+      return new Promise<void>((resolve) => {
+        finishSave = resolve;
+      });
+    return original(command, ...args);
+  });
+  await renderSettings();
+  const button = screen.getByRole("button", { name: "保存设置" });
+  await fireEvent.click(button);
+  await waitFor(() => expect(button.hasAttribute("disabled")).toBe(true));
+  await fireEvent.click(button);
+  await fireEvent.keyDown(document, { key: "Escape" });
+  expect(screen.getByLabelText("语言")).toBeTruthy();
+  expect(
+    native.invoke.mock.calls.filter(
+      ([command]) => command === "save_app_config_command",
+    ),
+  ).toHaveLength(1);
+  finishSave();
+  await waitFor(() =>
+    expect(screen.queryByRole("button", { name: "保存设置" })).toBeNull(),
+  );
+});
+
+test("failed settings saves keep the draft available for retry", async () => {
+  const original = native.invoke.getMockImplementation()!;
+  native.invoke.mockImplementation((command: string, ...args: unknown[]) => {
+    if (command === "save_app_config_command")
+      return Promise.reject(new Error("disk unavailable"));
+    return original(command, ...args);
+  });
+  await renderSettings();
+  const motion = screen.getByRole("switch", { name: "减少动画" });
+  await fireEvent.click(motion);
+  await fireEvent.click(screen.getByRole("button", { name: "保存设置" }));
+  await screen.findByText(/disk unavailable/);
+  expect(motion.getAttribute("aria-checked")).toBe("true");
+  await waitFor(() =>
+    expect(
+      screen.getByRole("button", { name: "保存设置" }).hasAttribute("disabled"),
+    ).toBe(false),
+  );
+});

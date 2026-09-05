@@ -36,7 +36,7 @@ const updateChecking = ref(false);
 const updateResult = ref<UpdateCheckResult | null>(null);
 const updateError = ref("");
 const draft = ref<AppConfig | null>(null);
-let saving = false;
+const saving = ref(false);
 
 function cloneConfig(): AppConfig {
   return {
@@ -50,7 +50,7 @@ watch(
   () => props.show,
   (show) => {
     if (show) draft.value = cloneConfig();
-    else if (!saving) {
+    else if (!saving.value) {
       settings.cancelPreview();
       draft.value = null;
     }
@@ -66,12 +66,14 @@ watch(
 );
 
 function updateShow(show: boolean) {
-  if (!show && !saving) settings.cancelPreview();
+  if (saving.value) return;
+  if (!show) settings.cancelPreview();
   emit("update:show", show);
 }
 
 async function saveSettings() {
-  saving = true;
+  if (saving.value || !draft.value) return;
+  saving.value = true;
   try {
     if (!draft.value) return;
     await settings.update({
@@ -85,10 +87,10 @@ async function saveSettings() {
     settings.cancelPreview();
     emit("update:show", false);
   } catch {
-    settings.cancelPreview();
-    draft.value = props.show ? cloneConfig() : null;
+    // Preserve the draft so the user can retry after a failed save.
+    if (draft.value) settings.preview(draft.value);
   } finally {
-    saving = false;
+    saving.value = false;
   }
 }
 
@@ -136,6 +138,7 @@ async function openUpdateDownload() {
             <span>{{ t("settings.language") }}</span>
             <NSelect
               v-model:value="draft.locale"
+              :disabled="saving"
               :aria-label="t('settings.language')"
               :options="[
                 { label: t('settings.system'), value: 'system' },
@@ -148,6 +151,7 @@ async function openUpdateDownload() {
             <span>{{ t("settings.theme") }}</span>
             <NSelect
               v-model:value="draft.theme"
+              :disabled="saving"
               :aria-label="t('settings.theme')"
               :options="[
                 { label: t('settings.system'), value: 'system' },
@@ -160,6 +164,7 @@ async function openUpdateDownload() {
             <span>{{ t("settings.accent") }}</span>
             <NColorPicker
               v-model:value="draft.accentColor"
+              :disabled="saving"
               :aria-label="t('settings.accent')"
               :show-alpha="false"
               :modes="['hex']"
@@ -171,6 +176,7 @@ async function openUpdateDownload() {
             </span>
             <NSlider
               v-model:value="draft.fontScalePercent"
+              :disabled="saving"
               :aria-label="t('settings.font_scale')"
               :min="85"
               :max="130"
@@ -181,6 +187,7 @@ async function openUpdateDownload() {
             <span>{{ t("settings.density") }}</span>
             <NSelect
               v-model:value="draft.density"
+              :disabled="saving"
               :aria-label="t('settings.density')"
               :options="[
                 { label: t('settings.comfortable'), value: 'comfortable' },
@@ -192,6 +199,7 @@ async function openUpdateDownload() {
             <span>{{ t("settings.reduced_motion") }}</span>
             <NSwitch
               v-model:value="draft.reducedMotion"
+              :disabled="saving"
               :aria-label="t('settings.reduced_motion')"
             />
           </label>
@@ -232,7 +240,12 @@ async function openUpdateDownload() {
         <span v-if="saveError" class="settings-error">
           {{ t("settings.save_failed") }}: {{ saveError }}
         </span>
-        <NButton type="primary" @click="saveSettings">
+        <NButton
+          type="primary"
+          :loading="saving"
+          :disabled="saving"
+          @click="saveSettings"
+        >
           {{ t("settings.save") }}
         </NButton>
       </div>
