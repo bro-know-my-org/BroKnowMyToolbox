@@ -2,7 +2,7 @@
 
 ## 前置条件
 
-1. Spark Analyzer 的 host-authorizer API 与真实 keyring 修复必须先在其独立仓库提交，在 Windows、Linux、macOS CI 通过，并发布包含修复的新版本；当前 sibling 工作树的未提交状态是发布阻断项。
+1. Spark Analyzer 的必需接入修复必须先在其独立仓库提交，在 Windows、Linux、macOS CI 通过，并发布包含修复的新版本；本地提交不等于已发布，当前状态统一见 [审查与发布验收进度](./review-release-status.md)。
 2. Toolbox 必须从临时 sibling path/file 依赖切换到该固定版本，并让 Cargo crates、npm package、CI checkout 与 release workflow 指向同一个可追溯 revision/version；锁文件不得依赖本地工作树状态。
 3. `Cargo.toml`、根 `package.json`、桌面 package、Tauri config 和 tag 使用同一 SemVer。
 4. 本地及 CI 的格式、lint、类型、测试、构建和 clippy 门禁全部通过。

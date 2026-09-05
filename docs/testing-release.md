@@ -4,7 +4,7 @@
 
 - Rust/TypeScript 单元测试覆盖纯计算、解析和校验。
 - 接口集成测试穿过共享核心的公开 interface；文件生成使用临时真实文件系统，Spark 授权使用 host-authorizer adapter 测试。
-- Vitest 组件测试覆盖固定侧栏工作台、工具路由壳、首页工具发现、全局搜索与命令面板键盘导航、视觉设置修改的即时 CSS 状态同步、手动更新检查/打开下载页、授权、文件生成和 Spark 宿主授权/重试流程；Rust 测试覆盖桌面配置 IPC 的 camelCase 往返、磁盘 TOML 格式隔离，以及 Toolbox authorizer 装入 Spark plugin 后的真实 IPC 门禁。当前没有驱动真实 WebView 内部交互的端到端测试。
+- Vitest 组件测试覆盖固定侧栏工作台、工具路由壳、首页工具发现、全局搜索与命令面板键盘导航、视觉设置修改的即时 CSS 状态同步、手动更新检查/打开下载页、授权、文件生成和 Spark 宿主授权/重试流程；Rust 测试覆盖桌面配置 IPC 的 camelCase 往返、磁盘 TOML 格式隔离，以及 Toolbox authorizer 装入 Spark plugin 后使用真实生成权限配置的 IPC 门禁。[Linux WebView 验收](./validation/linux-webview-20260905.md)另记录本机真实元素交互、标题对比度、文本报告及设置重启持久化证据；临时驱动尚未成为仓库或 CI 的端到端套件。
 - 860px 最小窗口宽度已用无头 Chromium 检查侧栏文字、主题 token 和正文前景/背景色；该项目前是人工可重复视觉检查，尚未纳入 CI 浏览器测试。
 - CLI 契约测试覆盖人类输出基本行为、JSON schema、stderr 和退出码。
 - 发布 workflow 在每个目标完成 staging 后执行 CLI 版本、工具目录、文件生成 dry-run、便携数据根和桌面进程启动冒烟。本机已使用与 workflow 相同的 staging/smoke 脚本验证 Linux x86_64 release 产物；Windows 与 macOS 仍只有流程定义，须由真实 tag workflow 形成对应平台证据。

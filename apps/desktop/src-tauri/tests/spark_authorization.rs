@@ -1,6 +1,6 @@
 use bkmsa_tauri::{HostAuthorizer, HostCapability};
 use bkmt_desktop::{DesktopState, SparkHostAuthorizer, set_spark_consent};
-use tauri::test::{INVOKE_KEY, get_ipc_response, mock_builder, mock_context, noop_assets};
+use tauri::test::{INVOKE_KEY, get_ipc_response, mock_builder};
 
 #[test]
 fn spark_host_authorizer_uses_the_shared_persisted_consent_store() {
@@ -43,11 +43,7 @@ fn desktop_can_persist_a_spark_consent_decision_for_the_plugin_gate() {
 #[test]
 fn toolbox_spark_plugin_ipc_is_gated_by_the_shared_rust_consent_store() {
     let data_root = tempfile::tempdir().expect("data root should be created");
-    let mut context = mock_context(noop_assets());
-    context.runtime_authority_mut().__allow_command(
-        "plugin:bkmsa|analyzer_fetch_report".to_string(),
-        tauri::utils::acl::ExecutionContext::Local,
-    );
+    let context = tauri::generate_context!();
     let app = mock_builder()
         .plugin(bkmsa_tauri::init_with_authorizer(SparkHostAuthorizer::new(
             data_root.path(),
@@ -61,7 +57,7 @@ fn toolbox_spark_plugin_ipc_is_gated_by_the_shared_rust_consent_store() {
         get_ipc_response(
             &webview,
             tauri::webview::InvokeRequest {
-                cmd: "plugin:bkmsa|analyzer_fetch_report".into(),
+                cmd: "plugin:bkmsa-tauri|analyzer_fetch_report".into(),
                 callback: tauri::ipc::CallbackFn(0),
                 error: tauri::ipc::CallbackFn(1),
                 url: "tauri://localhost".parse().expect("URL should parse"),
