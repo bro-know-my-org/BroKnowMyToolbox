@@ -8,7 +8,7 @@
 - 860px 最小窗口宽度已用无头 Chromium 检查侧栏文字、主题 token 和正文前景/背景色；该项目前是人工可重复视觉检查，尚未纳入 CI 浏览器测试。
 - CLI 契约测试覆盖人类输出基本行为、JSON schema、stderr 和退出码。
 - 发布 workflow 在每个目标完成 staging 后执行 CLI 版本、工具目录、文件生成 dry-run、便携数据根和桌面进程启动冒烟。本机已使用与 workflow 相同的 staging/smoke 脚本验证 Linux x86_64 release 产物；Windows 与 macOS 仍只有流程定义，须由真实 tag workflow 形成对应平台证据。
-- Linux 本机桌面冒烟使用当前图形会话直接启动并存活五秒。workflow 的 `xvfb-run` 分支因本机未安装 Xvfb 而未形成额外证据；release runner 会在构建 job 中显式安装 `xvfb` 后执行该分支。
+- Linux 本机桌面冒烟使用当前图形会话直接启动并存活五秒。workflow 的 `xvfb-run` 分支因本机未提供该 wrapper 而未形成额外证据；release runner 会在构建 job 中显式安装 `xvfb` 后执行该分支。当前源码的具体 revision、产物校验和与验证限制记录在 [Linux 本地验收](./validation/linux-release-552030d.md)。
 
 测试不依赖真实用户凭据。keyring 使用独立测试凭据并在测试后清理；便携测试使用临时目录和 marker。
 
