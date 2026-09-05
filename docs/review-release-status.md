@@ -4,9 +4,9 @@
 
 ## 当前外部前置条件
 
-2026-09-05 复核：GitHub API 身份验证仍返回 401，需维护者在本机恢复登录。Spark 必需修复已在独立分支 `fix/toolbox-host-integration` 提交为 `e31a366`，版本准备另提交为 `ee6e71e`；尚未推送或发布。公开 npm 包与 crates sparse index 中的 `bkmsa-tauri` 最新均为 `0.1.1`，不包含这些修复；本地已统一补丁版 `0.1.2` 的版本及内部依赖约束，没有创建 tag。维护者已授权自行安排本轮所需处理；只推进 Toolbox 发版必需修复及最小补丁版本，Spark 未来的大重构明确不在本轮范围。不能把本地 sibling 依赖直接当成可发布版本。技术阻断详见 [风险](./risks.md)。
+2026-09-05 更新：维护者已恢复 GitHub 登录。Spark 必需接入修复、版本准备、CSS 隔离和插件命名修正共四个提交已上传到 `fix/toolbox-host-integration`，HEAD 为 `f262fc5`；[Spark PR #1](https://github.com/bro-know-my-org/BroKnowMySparkAnalyzer/pull/1) 已创建，等待三平台 CI，尚未合并或发布。此前 registry 查询的 npm 包与 `bkmsa-tauri` 最新均为 `0.1.1`，不包含这些修复；本地补丁版为 `0.1.2`，没有创建 tag。维护者已授权自行安排本轮所需处理；只推进 Toolbox 发版必需修复及最小补丁版本，Spark 未来的大重构明确不在本轮范围。不能把本地 sibling 依赖直接当成可发布版本。技术阻断详见 [风险](./risks.md)。
 
-另以禁止交互的 `git push --dry-run origin HEAD:refs/heads/refactor/rebuild` 验证 Git HTTPS 传输：返回无法读取 Username（exit 128），没有真实推送或远程变更；不能绕过 GitHub API 的认证问题直接完成 Git 推送。
+认证恢复前，禁止交互的 Git push dry-run 因缺少凭据失败。认证恢复后，Git HTTPS 的 fetch/push 又因直连 `github.com:443` 超时失败；没有可复用的本机代理。Spark 改用官方 Git Database API 上传原始 blob/tree/commit，四个返回 SHA 均与本地原提交完全一致后才创建远程分支，没有改写历史或绕过 CI。此时 Toolbox 工作分支仍未上传；组织级 npm/Cargo 发布 secret 名称可见，凭据有效性仍须实际发布流程验证。
 
 ## 已完成批次
 
