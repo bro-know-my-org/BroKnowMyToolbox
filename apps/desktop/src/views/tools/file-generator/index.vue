@@ -215,6 +215,7 @@ async function execute() {
     invalidatePlan();
   } catch (value) {
     const mapped = commandError(value);
+    if (mapped.code === "plan_changed") invalidatePlan();
     error.value = mapped;
     consentRequired.value =
       mapped.code === "consent_required" || mapped.code === "consent_denied";

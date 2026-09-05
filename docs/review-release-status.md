@@ -13,6 +13,8 @@
 
 ## 基线意见跟踪
 
+生成计划界面批次已完成：执行返回 `plan_changed` 时清除旧计划及其请求快照，必须重新预览才能再次执行；测试验证旧列表/按钮消失、重新预览后的 `targetRevision` 随重试发送。OCR 两轮均零意见，最终会话 `efaf263f-7733-4062-aa3b-7959c5219074`；桌面全部 43 项测试、核心 execution 7 项、桌面 file_generator_commands 7 项及 lint/typecheck/格式/文档检查通过，未改变 Rust 写入策略。
+
 工具注册批次已完成：目录构造逐项验证定义并拒绝关键词/能力数组空洞；两个桌面 loader 显式返回默认导出的 Vue 组件。OCR 会话 `783f425e-8178-4b38-b85e-6a935965941d` 对两个源码文件零意见；目录契约 15 项、桌面 42 项、发布 4 项、文档 5 项测试及 lint/typecheck/build 通过。基线将 loader 问题判断为构建失败并不成立，本次修正的是返回值与声明契约的一致性。
 
 诊断批次已完成：GUI 与 CLI JSON 对非 UTF-8 路径统一返回 `data_root_not_unicode`，不改变实际数据位置；数据源使用封闭枚举，GUI 显示结构化诊断错误。Rust 诊断回归 4 项、设置 UI 9 项、lint/typecheck/Clippy/格式与文档检查通过。OCR 会话 `a3c3f47a-8863-4304-ba08-78b016ed14f6` 的唯一意见称缺少 UI 回归测试；已核实 `settings-ui.test.ts` 中 `structured runtime diagnostic failures remain visible in settings` 正是该场景且运行通过，故为误报，无剩余可执行意见。
@@ -53,7 +55,7 @@
 | 29     | 授权文件检查后打开的竞态                             | 已修复，见授权读取批次                                     |
 | 30–31  | 数据根空路径错误、Windows 绝对路径测试夹具           | 已修复，见数据路径批次                                     |
 | 32–33  | 损坏用户模板恢复、1 MiB 边界                         | 待核实并修复                                               |
-| 34     | plan_changed 后保留过期 GUI 预览                     | 待修复                                                     |
+| 34     | plan_changed 后保留过期 GUI 预览                     | 已修复，见生成计划界面批次                                 |
 | 35–36  | 覆盖 revision/最终替换竞态、无 hard-link 文件系统    | 待核实安全语义和跨平台实现                                 |
 | 37–39  | 生成计划路径冲突复杂度、Windows 文件名、已有目录冲突 | 待修复                                                     |
 

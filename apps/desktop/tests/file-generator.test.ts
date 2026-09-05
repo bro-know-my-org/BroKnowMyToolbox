@@ -9,6 +9,7 @@ import { afterEach, expect, test, vi } from "vitest";
 
 import FileGeneratorView from "../src/views/tools/file-generator/index.vue";
 import { createAppI18n } from "../src/i18n";
+import type { PlannedFile } from "../src/api/file-generator";
 
 const api = vi.hoisted(() => ({
   planFileGeneration: vi.fn(),
@@ -74,6 +75,49 @@ test("editing inputs invalidates the preview instead of executing a different re
 
   expect(screen.queryByRole("button", { name: "执行计划" })).toBeNull();
   expect(api.executeFileGeneration).not.toHaveBeenCalled();
+});
+
+test("a changed filesystem invalidates the rejected plan and requires a fresh preview", async () => {
+  const originalFiles: PlannedFile[] = [
+    { path: "README.md", action: "create", targetRevision: null },
+  ];
+  const refreshedFiles: PlannedFile[] = [
+    { path: "README.md", action: "overwrite", targetRevision: "new-revision" },
+  ];
+  api.planFileGeneration
+    .mockResolvedValueOnce({ status: "planned", files: originalFiles })
+    .mockResolvedValueOnce({ status: "planned", files: refreshedFiles });
+  api.executeFileGeneration
+    .mockRejectedValueOnce({
+      code: "plan_changed",
+      message: "Preview the changed files again",
+    })
+    .mockResolvedValueOnce({
+      status: "complete",
+      files: [{ path: "README.md", outcome: "created" }],
+    });
+  render(FileGeneratorView, { global: { plugins: [createAppI18n()] } });
+  await fireEvent.update(screen.getByLabelText("目标目录"), "/tmp/demo");
+  await fireEvent.update(screen.getByLabelText("name"), "Demo");
+  await fireEvent.click(screen.getByRole("button", { name: "预览生成计划" }));
+  await fireEvent.click(
+    await screen.findByRole("button", { name: "执行计划" }),
+  );
+
+  await screen.findByText("Preview the changed files again");
+  expect(screen.queryByRole("button", { name: "执行计划" })).toBeNull();
+  expect(screen.queryByText("README.md")).toBeNull();
+  expect(api.executeFileGeneration).toHaveBeenCalledTimes(1);
+
+  await fireEvent.click(screen.getByRole("button", { name: "预览生成计划" }));
+  await fireEvent.click(
+    await screen.findByRole("button", { name: "执行计划" }),
+  );
+  await waitFor(() =>
+    expect(api.executeFileGeneration).toHaveBeenCalledTimes(2),
+  );
+  expect(api.executeFileGeneration.mock.calls[1][1]).toEqual(refreshedFiles);
+  expect(await screen.findByText("执行完成")).toBeTruthy();
 });
 
 test("users can explicitly deny a filesystem write consent request", async () => {
