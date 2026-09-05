@@ -10,20 +10,30 @@ import AppSidebar from "./components/shell/AppSidebar.vue";
 import AppTopbar from "./components/shell/AppTopbar.vue";
 import CommandPalette from "./components/shell/CommandPalette.vue";
 import SettingsDrawer from "./components/shell/SettingsDrawer.vue";
+import { builtInLocaleMessages } from "./i18n";
 import { useRuntimeStore } from "./stores/runtime";
 import { useSettingsStore } from "./stores/settings";
 
-const { locale, mergeLocaleMessage } = useI18n();
+const { locale, setLocaleMessage } = useI18n();
 const settings = useSettingsStore();
 const runtime = useRuntimeStore();
 const { config } = storeToRefs(settings);
 const settingsOpen = ref(false);
 const commandOpen = ref(false);
 const osTheme = useOsTheme();
+const systemLocale = ref(resolveSystemLocale());
+
+function resolveSystemLocale() {
+  return navigator.language.toLowerCase().startsWith("zh") ? "zh-CN" : "en-US";
+}
+
+function handleLanguageChange() {
+  systemLocale.value = resolveSystemLocale();
+}
 
 const resolvedLocale = computed(() => {
   if (config.value.locale !== "system") return config.value.locale;
-  return navigator.language.toLowerCase().startsWith("zh") ? "zh-CN" : "en-US";
+  return systemLocale.value;
 });
 const activeTheme = computed(() =>
   config.value.theme === "dark" ||
@@ -41,11 +51,22 @@ const themeOverrides = computed(() => ({
 
 watch(
   resolvedLocale,
-  async (value) => {
+  async (value, _previous, onCleanup) => {
+    let cancelled = false;
+    onCleanup(() => {
+      cancelled = true;
+    });
     locale.value = value;
     document.documentElement.lang = value;
+    setLocaleMessage(value, builtInLocaleMessages(value));
     try {
-      mergeLocaleMessage(value, await loadLocaleOverride(value));
+      const overrides = await loadLocaleOverride(value);
+      if (!cancelled) {
+        setLocaleMessage(value, {
+          ...builtInLocaleMessages(value),
+          ...overrides,
+        });
+      }
     } catch {
       // Built-in messages remain available without an override file.
     }
@@ -64,8 +85,12 @@ onMounted(() => {
   void settings.initialize();
   void runtime.initialize();
   window.addEventListener("keydown", handleShortcut);
+  window.addEventListener("languagechange", handleLanguageChange);
 });
-onUnmounted(() => window.removeEventListener("keydown", handleShortcut));
+onUnmounted(() => {
+  window.removeEventListener("keydown", handleShortcut);
+  window.removeEventListener("languagechange", handleLanguageChange);
+});
 </script>
 
 <template>

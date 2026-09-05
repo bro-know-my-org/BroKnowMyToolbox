@@ -3,6 +3,12 @@ import { createI18n } from "vue-i18n";
 import enUS from "./locales/en-US.json";
 import zhCN from "./locales/zh-CN.json";
 
+export function builtInLocaleMessages(locale: string): Record<string, string> {
+  if (locale === "zh-CN") return { ...zhCN };
+  if (locale === "en-US") return { ...enUS };
+  return {};
+}
+
 export function createAppI18n() {
   return createI18n({
     legacy: false,
@@ -13,8 +19,8 @@ export function createAppI18n() {
       return typeof value === "string" ? value : null;
     },
     messages: {
-      "en-US": { ...enUS },
-      "zh-CN": { ...zhCN },
+      "en-US": builtInLocaleMessages("en-US"),
+      "zh-CN": builtInLocaleMessages("zh-CN"),
     },
   });
 }
