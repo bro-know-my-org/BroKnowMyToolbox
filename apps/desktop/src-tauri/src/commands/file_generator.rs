@@ -180,7 +180,7 @@ pub fn save_user_template(
     template_json: String,
 ) -> Result<FileTemplateEntry, CommandError> {
     authorize_filesystem_write(state)?;
-    if template_json.len() as u64 + 1 > MAX_USER_TEMPLATE_BYTES {
+    if template_json.len() as u64 > MAX_USER_TEMPLATE_BYTES {
         return Err(CommandError {
             code: "user_template_too_large".to_string(),
             message: "user template exceeds 1 MiB".to_string(),
@@ -215,7 +215,6 @@ pub fn save_user_template(
         })?;
     temporary
         .write_all(template.template_json.as_bytes())
-        .and_then(|()| temporary.write_all(b"\n"))
         .and_then(|()| temporary.flush())
         .and_then(|()| temporary.as_file().sync_all())
         .map_err(|error| CommandError {
