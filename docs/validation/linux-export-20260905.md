@@ -24,4 +24,14 @@
 - 单变量探针：仅临时覆盖导出节点的 `left: -12000px` 为 `left: 0`，同一真实导出流程得到 462 种颜色；撤除探针后不作为产品修复。原因是离屏节点位置被复制进栅格化画布，文字位于画布外。
 - 后续需要仅重置导出副本位置、回归测试及新构建真实复验；当前不关闭图片导出门禁，也不把已发布 Spark `0.1.2` 宣称为完整验收通过。
 
-未验证深色图片导出、外部 AI、Windows/macOS GUI、FAT/exFAT 或 macOS 实机。全部剩余门禁见 [审查与发布进度](../review-release-status.md)。
+## 后续修复与真实复验
+
+上述失败保留为 Spark `0.1.2` 基线证据。第一次仅给栅格化副本设置 `left: 0` 的修复仍在真实 WebKit 失败：序列化 SVG 同时包含 `inset-inline: -12000px 12260px`。最终 Spark 提交 `ae6bb1db101a65518ea8a70918cdc7fa07de9b22` 将副本设为 `position: static`，同时忽略物理与逻辑 inset；活节点仍在屏幕外，成功或失败后均清理。回归覆盖浅色、深色、逻辑 inset 和失败清理，并通过真实 `toSvg` 检查副本。
+
+- 临时验收 checkout 使用本地修补 tarball，SHA-256 为 `9f7019f9da383a4628449014aa2ffee53045c7e3cd2a9982eae80f95572e32bb`；该包仍标为 `0.1.2`，仅用于修复验证，不是 registry 发布包，未替换 Toolbox 正式依赖。
+- 重新构建后的运行中桌面二进制 SHA-256 为 `b690c68f88b96d72bef4d1893644ba701ac6f8d9585110585cdf3202f73f0177`。无 CSS/序列化探针，通过真实导出按钮和原生保存对话框分别导出浅色、深色图片，并人工检查五节诊断正文可见。
+- 浅色 `diagnosis-static-light.png`：1840×836、462 种颜色，SHA-256 `c2bc6ea69ced7da771419882f05978be02ced9be4ed972134bbe47c364437f98`。
+- 深色 `diagnosis-static-dark.png`：1840×836、491 种颜色，SHA-256 `c968c9087408e0bccf2afdab5caa3bfe7b5e9e0c66c8211ff81f49edd94980f9`。
+- 修复最终 OCR 会话 `9397c669-edef-4b9f-9a85-1b65ecadeea9` 对两个选中文件零意见；16 项前端测试及 SDK/独立前端构建通过。补丁版本准备提交 `afffddbcf4ed5180be1cb59b26f9d44a034daebb` 统一版本为 `0.1.3`，尚待发布和 Toolbox 正式依赖切换。
+
+图片及脚本位于临时目录 `/tmp/bkmt-gui-ai.qTWpbF`，不保证长期保留。颜色数仅排除空白，不能代替完整视觉质量或导出标题对比度测量。未验证外部 AI、Windows/macOS GUI、FAT/exFAT 或 macOS 实机。全部剩余门禁见 [审查与发布进度](../review-release-status.md)。

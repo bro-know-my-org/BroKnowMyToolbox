@@ -6,10 +6,13 @@
 
 2026-09-05 更新：[Spark PR #1](https://github.com/bro-know-my-org/BroKnowMySparkAnalyzer/pull/1) 已在[三平台 CI](https://github.com/bro-know-my-org/BroKnowMySparkAnalyzer/actions/runs/33966260002)通过后合并，merge revision 为 `0befcc1db459f938e561d34c203252096a4cca3e`，tree 与已审查的 `f262fc5` 一致。`v0.1.2` tag 指向该 merge；[发布流程](https://github.com/bro-know-my-org/BroKnowMySparkAnalyzer/actions/runs/33967063600)已完成四目标构建、四个 Rust crates 与 npm 发布，[公开 Release](https://github.com/bro-know-my-org/BroKnowMySparkAnalyzer/releases/tag/v0.1.2)具有 12 个已上传资产，包含两种 macOS 架构的 DMG。Spark 未来的大重构仍不在本轮范围。Toolbox 尚未合并或发布，剩余门禁见下方清单。
 
-认证恢复后，Git HTTPS 的 fetch/push 仍因直连 `github.com:443` 超时失败。使用官方 Git Database API 上传原始 blob/tree/commit 并逐个核对 SHA，Spark 四个提交及 ReBuild 历史均保持原哈希，未改写历史或绕过 CI。Toolbox 远程 `refactor/rebuild` 已快进至 `3cfb453`，[草稿 PR #1](https://github.com/bro-know-my-org/BroKnowMyToolbox/pull/1) 已创建；[首次 CI](https://github.com/bro-know-my-org/BroKnowMyToolbox/actions/runs/33969746418)前端因本进度文档格式失败，后续格式修正须由 CI 复核，Rust 检查仍在运行。npm/Cargo 发布凭据已由成功的 Spark 发布流程验证，没有读取或记录 token。
+认证恢复后，Git HTTPS 的 fetch/push 仍因直连 `github.com:443` 超时失败。使用官方 Git Database API 上传原始 blob/tree/commit 并逐个核对 SHA，提交均保持原哈希，未改写历史或绕过 CI。Toolbox 远程 `refactor/rebuild` 已快进至 `4169221`，[草稿 PR #1](https://github.com/bro-know-my-org/BroKnowMyToolbox/pull/1) 已创建；[首次 CI](https://github.com/bro-know-my-org/BroKnowMyToolbox/actions/runs/33969746418)的文档格式问题已修复。[最新 CI](https://github.com/bro-know-my-org/BroKnowMyToolbox/actions/runs/33972423692)前端、Linux、macOS 通过，Windows 在 `spark_authorization` 测试启动时以 `0xc0000139 / STATUS_ENTRYPOINT_NOT_FOUND` 失败，仍是合并阻断。npm/Cargo 发布凭据已由成功的 Spark 发布流程验证，没有读取或记录 token。
 
 ## 已完成批次
 
+- PNG 导出修复已在 Spark `ae6bb1d` 完成，`afffddb` 准备 `0.1.3`；两提交已上传 `fix/diagnosis-image-export`。最终修复及版本 OCR 均零意见；16 项前端测试、SDK/独立前端构建、Rust 工作区和独立 Tauri 检查通过。[真实浅色/深色 PNG 复验](./validation/linux-export-20260905.md#后续修复与真实复验)通过，但使用本地验收包，正式发布及 Toolbox registry 切换仍待完成。
+- Windows 新建修复 `4169221` 改用 `NtSetInformationFile(FileRenameInformation)`，保持父目录句柄相对路径及禁止替换，错误由 NTSTATUS 转换。补齐短名、Unicode 和嵌套路径回归；OCR 修复报告长度断言遗漏后，最终会话 `c6ee86ac-b276-4d0d-b062-b1562299c192` 对三个选中文件零意见。本机 Rust 工作区测试及 Windows 交叉 check/Clippy 通过；远程最新失败已不在原来的 CLI 新建用例，但 Windows 整体门禁仍未通过。
+- FAT/exFAT CI 批次 `0428bfd` 新增仅在临时普通镜像上运行的真实文件系统测试；本机语法、文档链接检查及 OCR 会话 `1a8d923e-97f3-4026-8ffb-4aa5c473dafc`（两个选中文件零意见）通过，尚未取得挂载测试的 CI 结果，不关闭 #36。
 - 独立构建与补充 GUI 验收：从 `3cfb453` 导出到 `/tmp/bkmt-independent.pGLnQk`，无相邻 Spark 源码；使用官方 npm 源冻结安装、73 项测试、前端构建及 locked/offline Rust 全目标 check 通过。Cargo 复用 registry/target 缓存，不声称无缓存全新编译。依赖切换最终 OCR 会话 `931b1914-7ed6-4524-96b8-41270f8b3aca` 同样对 5 文件零意见。真实 860px 布局、本机假 AI 分析与全屏通过，但发现图片导出 PNG 空白；[补充证据](./validation/linux-export-20260905.md)记录四次失败及单变量定位，修复和新构建复验前不得关闭该门禁。
 - Spark 正式依赖切换：npm 官方 registry 的 `0.1.2` tarball 通过 SHA-512 integrity 校验，三个发布 UI 文件 SHA-256 与[此前 WebView 验收](./validation/linux-webview-20260905.md)完全相同。官方 crates index 和实际 `bkmsa-tauri 0.1.2` 下载包的 SHA-256 均为 `a7b9f803102e062d2c78eadc9e4f312b9cd94760eaf1e91b7f30f1d4200a960c`。Toolbox npm/Cargo manifest 精确固定 `0.1.2`，锁文件改为 registry 包，CI/release 不再检出 Spark。因本机 TUNA 尚未同步，Cargo 验证仅在命令级指定 rsproxy，未改变全局或仓库源配置；npm 安装指定官方源。切换后 73 项前端/脚本测试、Rust 全工作区全目标 check/test/Clippy、lint、类型检查、构建、格式及离线冻结安装通过。OCR 会话 `8af0250a-996b-487e-b6e2-a7492b58f325` 对 5 个选中文件零意见；文档人工核对。pnpm 自动更新中的无关 `ansi-styles` 漂移已恢复；独立 checkout 与远程 CI 仍待完成。
 - 真实 WebView 接入验收：修复 SA 全局样式污染宿主（Spark `1b286b0`）及运行时/前端插件名与生成权限命名空间错配（Spark `f262fc5`）。两批 OCR 均零意见，回归先红后绿；Toolbox IPC 测试改用真实生成 ACL，不再手工放行。最终 debug 构建已实测文件预览/写入、过期覆盖拒绝、Spark 本地文本加载、凭据拒绝、深色/中文同步和重启持久化；标题对比度由 `1.18:1` 恢复到浅色 `15.99:1`、深色 `16.72:1`。[完整证据](./validation/linux-webview-20260905.md)记录 revision、依赖/二进制哈希、测试、隔离环境与未验证范围。SA 大重构仍明确延期；这不是完整 GUI 验收或发布完成，GitHub 认证复查仍为 401。
@@ -96,7 +99,7 @@ RPM 意见已取得实际反证：锁定 Tauri CLI `2.11.4` 在本机没有 `rpm
 ## 完成证据清单
 
 - [ ] 所有审查意见有可核实的处理结论，最后一轮代码复审无剩余可执行问题。
-- [x] Spark 修复独立发布，Toolbox npm/Cargo/CI 依赖全部可追溯并固定。
+- [ ] Spark 修复独立发布，Toolbox npm/Cargo/CI 依赖全部可追溯并固定（`0.1.2` 已完成，新增 PNG 修复等待 `0.1.3`）。
 - [ ] 最终工作树完整质量检查通过，GUI 关键流程验收完成。
 - [ ] 重构分支推送，PR 门禁通过并合并到 master，记录 PR 和 merge revision。
 - [ ] 目标 tag 对应统一版本，四个目标构建和 staged 冒烟通过。
