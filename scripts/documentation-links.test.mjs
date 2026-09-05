@@ -82,3 +82,108 @@ test("documentation link checker models occupied heading slugs and fragment case
     "README.md:4: missing fragment #Foo in README.md",
   ]);
 });
+
+test("escaped labels and destinations follow CommonMark rather than link-shaped text", async (t) => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "bkmt-doc-links-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  await writeFile(path.join(root, "a(b).md"), "# Guide\n");
+  await writeFile(path.join(root, "a&b.md"), "# Guide\n");
+  await writeFile(
+    path.join(root, "README.md"),
+    [
+      String.raw`\[not a link](missing.md)`,
+      String.raw`[escaped](a\(b\).md)`,
+      String.raw`[reference][id]`,
+      String.raw`\[literal][id]`,
+      "[entity](a&amp;b.md)",
+      "",
+      String.raw`[id]: a\(b\).md`,
+    ].join("\n"),
+  );
+  assert.deepEqual(await checkDocumentationLinks(root), []);
+});
+
+test("parenthesized titles and first reference definitions preserve the actual target", async (t) => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "bkmt-doc-links-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  await writeFile(path.join(root, "guide.md"), "# Guide\n");
+  await writeFile(
+    path.join(root, "README.md"),
+    [
+      "[valid](guide.md (a title)) [missing](missing.md (a title))",
+      "[ref] [multi   word]",
+      "",
+      "[ref]: guide.md (reference title)",
+      "[ref]: missing-duplicate.md",
+      "[multi word]:",
+      "  guide.md",
+    ].join("\n"),
+  );
+  assert.deepEqual(await checkDocumentationLinks(root), [
+    "README.md:1: missing target missing.md",
+  ]);
+});
+
+test("thematic breaks do not manufacture heading fragments", async (t) => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "bkmt-doc-links-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  await writeFile(
+    path.join(root, "README.md"),
+    [
+      "# Heading",
+      "---",
+      "",
+      "_Real_ heading",
+      "===",
+      "",
+      "[valid](#heading) [setext](#real-heading) [phantom](#heading-1)",
+      "[extra](#heading#extra)",
+    ].join("\n"),
+  );
+  assert.deepEqual(await checkDocumentationLinks(root), [
+    "README.md:7: missing fragment #heading-1 in README.md",
+    "README.md:8: missing fragment #heading#extra in README.md",
+  ]);
+});
+
+test("multiline code spans, indented code and nested fences never create links", async (t) => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "bkmt-doc-links-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  await writeFile(
+    path.join(root, "README.md"),
+    [
+      "`code begins",
+      "[ignored](missing-span.md)",
+      "code ends`",
+      "",
+      "    [ignored](missing-indent.md)",
+      "",
+      "> ```md",
+      "> [ignored](missing-fence.md)",
+      "> ```",
+      "",
+      "[real](missing-real.md)",
+    ].join("\n"),
+  );
+  assert.deepEqual(await checkDocumentationLinks(root), [
+    "README.md:11: missing target missing-real.md",
+  ]);
+});
+
+test("multiline links retain their opening source line and nested headings use visible text", async (t) => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "bkmt-doc-links-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  await writeFile(
+    path.join(root, "README.md"),
+    [
+      "> # _Emphasis_ and `code` &amp; text",
+      "",
+      "[valid](#emphasis-and-code--text)",
+      "[multiline",
+      "label](missing.md)",
+    ].join("\n"),
+  );
+  assert.deepEqual(await checkDocumentationLinks(root), [
+    "README.md:4: missing target missing.md",
+  ]);
+});

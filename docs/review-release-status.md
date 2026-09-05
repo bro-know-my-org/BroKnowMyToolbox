@@ -13,6 +13,8 @@
 
 ## 基线意见跟踪
 
+文档解析批次已完成：以固定开发依赖 `mdast-util-from-markdown 2.0.3` 和 `github-slugger 2.0.0` 替代手写行级正则，覆盖转义、括号标题、重复/跨行引用定义、跨行代码、Setext 与分隔线、嵌套标题及完整 fragment。10 项文档回归和仓库链接检查通过；`pnpm test` 共 72 项、lint/typecheck/build/format 及离线冻结安装通过。OCR 会话 `2091e1ad-dddc-4d15-a4d4-4c9676dc7691` 对五个选中文件零意见；未改变应用运行时依赖。
+
 模板大小批次已完成：保存不再追加换行，原始 UTF-8 输入可达到完整 1 MiB；边界以下、恰好边界、超限拒绝且保留旧文件均有 GUI adapter 回归，CLI `@boundary` 同样验证读取与超限错误。两轮 OCR 均零意见，最终会话 `15cf4112-44aa-4e1d-b350-2205fff3750d`；相关测试、Clippy、格式和文档检查通过。
 
 RPM 意见已取得部分反证：本机 `tauri-bundler 2.9.4` 的 `src/bundle/linux/rpm.rs` 使用 Rust `rpm::PackageBuilder`、`build` 和 `write` 直接生成 RPM，不调用 `rpmbuild`。锁定 npm CLI `2.11.4` 的精确内置 bundler 映射尚未确认（官方源连接失败），因此不添加未经证明必需的系统工具，也不提前声称该发布目标已验收。
@@ -50,7 +52,7 @@ RPM 意见已取得部分反证：本机 `tauri-bundler 2.9.4` 的 `src/bundle/l
 | 8      | 模板 ID 诊断遗漏 Windows 保留名                      | 已修复，见 CLI 批次                                        |
 | 9      | 缺少根 Cargo.lock                                    | 误报：基线已跟踪根锁文件                                   |
 | 10、16 | CI/release 使用未固定的 Spark checkout               | 待上游修复发布后统一固定依赖                               |
-| 11–15  | 文档链接解析的转义、标题、代码跨度和片段边界         | 待核实并补充测试                                           |
+| 11–15  | 文档链接解析的转义、标题、代码跨度和片段边界         | 已修复，见文档解析批次                                     |
 | 17     | Linux RPM 构建依赖                                   | 已有源码反证，精确 CLI 映射与发布构建仍待验证              |
 | 18     | 非 UTF-8 数据路径诊断                                | 已修复，见诊断批次                                         |
 | 19     | 更新下载 URL 限制到正式仓库                          | 已修复，见更新检查批次                                     |

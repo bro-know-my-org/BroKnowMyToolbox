@@ -14,6 +14,8 @@
 
 ## CI 门禁
 
+`pnpm run test:docs` 使用固定版本的 CommonMark 解析器提取 Markdown 链接、图片及引用定义，用 GitHub 标题 slug 规则检查本地锚点，诊断保留链接起始行号。代码块、跨行代码跨度和转义按语法处理；外部 URL 不做连通性探测，原始 HTML 的链接不在此检查器范围内。
+
 合并前要求 format、lint、类型检查、文档链接、Rust check、单元测试和接口集成测试。发布 workflow 执行质量门禁、四目标构建、staged CLI/桌面启动冒烟和发布资产整理；它尚未驱动真实 WebView 内部的完整 GUI 操作。校验和及发布清单生成器已有脚本测试；Linux x86_64 已有本机真实 release staging/smoke 证据，其余目标仍须由真实 tag run 产生。
 
 没有 macOS 实机。GitHub macOS runner 可以验证编译和自动冒烟，但真实交互、Gatekeeper、签名、公证及升级必须标为未验证，直到获得设备和凭据。
