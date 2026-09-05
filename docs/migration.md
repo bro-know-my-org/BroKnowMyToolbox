@@ -20,6 +20,6 @@
 
 Spark Analyzer 仓库位于相邻的 `BroKnowMySparkAnalyzer`。GUI 复用 `@bro-know-my/spark-analyzer` 与 Tauri adapter；CLI 复用 `bkmsa-core`、`bkmsa-agent`，不依赖 npm UI，也不启动 `bkmsa` 子进程。
 
-当前 sibling 工作树包含 Toolbox 所需但尚未提交的 host-authorizer、API 与 keyring 改动；不得把这些文件复制或提交进 Toolbox。迁移完成不等于发布解阻，Spark 必须先独立提交、验证和发布，随后再统一固定 npm、Cargo、CI 与 release 依赖。
+当前 sibling 包含 Toolbox 所需但尚未发布的 host-authorizer、API 与 keyring 修复；独立提交及验证进度见 [审查与发布验收进度](./review-release-status.md)。不得把这些文件复制或提交进 Toolbox。迁移完成不等于发布解阻，Spark 必须先独立验证和发布，随后再统一固定 npm、Cargo、CI 与 release 依赖。
 
 集成前先完成 [keyring 阻断项](./risks.md#阻断项)。

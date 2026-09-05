@@ -6,7 +6,7 @@
 
 Spark Analyzer 工作树已为 Windows Credential Manager、macOS Keychain 和 Linux Secret Service/keyutils 显式启用 backend，并新增跨 Entry、跨进程凭据测试。该修复仍需通过三平台 CI 并发布新版本；在此之前 Toolbox 只能使用本地路径依赖，不能完成可发布的 Spark 集成。
 
-当前 Toolbox 还直接依赖 sibling Spark Analyzer 工作树中的未提交 host-authorizer、API 和 keyring 改动；其已提交 HEAD `7a04edc56a8ff6422ae8519dbeee367afc82c409` 本身不足以构建本项目。不得把这些 sibling 改动混入 Toolbox 提交。正式发布前必须先在 Spark 仓库独立审查、提交并发布，再把 Toolbox 的 Cargo crates、npm package、CI checkout 和 release workflow 统一固定到同一可追溯 revision/version。
+当前 Toolbox 还直接依赖 sibling Spark Analyzer 中尚未发布的 host-authorizer、API 和 keyring 修复；独立提交及验证进度统一记录在 [审查与发布验收进度](./review-release-status.md)。不得把这些 sibling 源码混入 Toolbox 提交。正式发布前必须先在 Spark 仓库完成独立验证和发布，再把 Toolbox 的 Cargo crates、npm package、CI checkout 和 release workflow 统一固定到同一可追溯 revision/version。本地锁文件跟随 sibling 版本，只保证本地集成一致性，不能证明远程 checkout 或已发布依赖可用。
 
 ## 已知风险
 
