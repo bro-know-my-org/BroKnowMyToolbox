@@ -7,11 +7,17 @@ pub struct DesktopState {
 }
 
 impl DesktopState {
-    pub fn new(data_root: PathBuf) -> Self {
-        Self {
-            data_root,
-            data_root_source: toolbox_core::DataRootSource::Explicit,
-        }
+    pub fn new(data_root: PathBuf) -> Result<Self, toolbox_core::DataRootError> {
+        let resolved = toolbox_core::resolve_data_root(toolbox_core::DataRootCandidates {
+            explicit: Some(data_root),
+            environment: None,
+            portable: None,
+            system: PathBuf::new(),
+        })?;
+        Ok(Self {
+            data_root: resolved.path,
+            data_root_source: resolved.source,
+        })
     }
 
     pub fn discover() -> Result<Self, String> {

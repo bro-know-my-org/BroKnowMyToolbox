@@ -4,7 +4,8 @@ use toolbox_core::ThemeMode;
 #[test]
 fn desktop_config_commands_round_trip_through_the_shared_data_root() {
     let data_root = tempfile::tempdir().expect("data root should be created");
-    let state = DesktopState::new(data_root.path().to_path_buf());
+    let state =
+        DesktopState::new(data_root.path().to_path_buf()).expect("test data root must be absolute");
     let mut config = load_app_config(&state).expect("default config should load");
     config.locale = "en-US".to_string();
     config.theme = ThemeMode::Dark;

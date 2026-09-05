@@ -1,7 +1,7 @@
 use bkmt_desktop::{DesktopState, load_locale_override};
 
 fn assert_rejected(root: &std::path::Path, expected_code: &str) {
-    let state = DesktopState::new(root.to_path_buf());
+    let state = DesktopState::new(root.to_path_buf()).expect("test data root must be absolute");
     let (sender, receiver) = std::sync::mpsc::channel();
     std::thread::spawn(move || {
         let _ = sender.send(load_locale_override(&state, "en-US"));
@@ -15,7 +15,8 @@ fn assert_rejected(root: &std::path::Path, expected_code: &str) {
 #[test]
 fn missing_locale_pack_falls_back_without_creating_directories() {
     let root = tempfile::tempdir().unwrap();
-    let state = DesktopState::new(root.path().join("absent"));
+    let state =
+        DesktopState::new(root.path().join("absent")).expect("test data root must be absolute");
     assert!(load_locale_override(&state, "en-US").unwrap().is_empty());
     assert!(!root.path().join("absent").exists());
 }

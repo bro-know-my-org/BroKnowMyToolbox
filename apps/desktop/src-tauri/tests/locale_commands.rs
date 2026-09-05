@@ -13,7 +13,8 @@ fn desktop_loads_flat_minecraft_style_locale_overrides() {
         }"#,
     )
     .expect("locale override should be written");
-    let state = DesktopState::new(data_root.path().to_path_buf());
+    let state =
+        DesktopState::new(data_root.path().to_path_buf()).expect("test data root must be absolute");
 
     let messages = load_locale_override(&state, "zh-CN").expect("flat locale override should load");
 
@@ -24,7 +25,8 @@ fn desktop_loads_flat_minecraft_style_locale_overrides() {
 #[test]
 fn locale_names_cannot_escape_the_locale_directory() {
     let data_root = tempfile::tempdir().expect("data root should be created");
-    let state = DesktopState::new(data_root.path().to_path_buf());
+    let state =
+        DesktopState::new(data_root.path().to_path_buf()).expect("test data root must be absolute");
 
     let error = load_locale_override(&state, "../secrets")
         .expect_err("unsafe locale name should be rejected");

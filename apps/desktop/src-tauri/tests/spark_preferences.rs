@@ -5,7 +5,8 @@ use bkmt_desktop::{
 #[test]
 fn spark_preferences_are_stored_in_the_shared_tool_data_root() {
     let data_root = tempfile::tempdir().expect("data root should be created");
-    let state = DesktopState::new(data_root.path().to_path_buf());
+    let state =
+        DesktopState::new(data_root.path().to_path_buf()).expect("test data root must be absolute");
     assert_eq!(
         load_spark_preferences(&state).expect("missing preferences should load"),
         None
@@ -44,7 +45,8 @@ fn spark_preferences_are_stored_in_the_shared_tool_data_root() {
 #[test]
 fn spark_preferences_reject_invalid_values_and_future_schemas() {
     let data_root = tempfile::tempdir().expect("data root should be created");
-    let state = DesktopState::new(data_root.path().to_path_buf());
+    let state =
+        DesktopState::new(data_root.path().to_path_buf()).expect("test data root must be absolute");
     let invalid = SparkPreferences {
         provider_id: "openai".to_string(),
         base_url: "file:///tmp/not-a-provider".to_string(),

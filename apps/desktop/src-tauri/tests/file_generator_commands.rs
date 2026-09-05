@@ -23,7 +23,8 @@ fn template_json() -> String {
 #[test]
 fn desktop_template_catalog_includes_built_in_and_persisted_user_templates() {
     let data_root = tempfile::tempdir().expect("data root should be created");
-    let state = DesktopState::new(data_root.path().to_path_buf());
+    let state =
+        DesktopState::new(data_root.path().to_path_buf()).expect("test data root must be absolute");
 
     let denied = save_user_template(&state, template_json())
         .expect_err("saving a user template without consent should be rejected");
@@ -47,7 +48,8 @@ fn desktop_template_catalog_includes_built_in_and_persisted_user_templates() {
 fn desktop_command_plans_files_through_the_shared_core() {
     let destination = tempfile::tempdir().expect("destination should be created");
     let data_root = tempfile::tempdir().expect("data root should be created");
-    let state = DesktopState::new(data_root.path().to_path_buf());
+    let state =
+        DesktopState::new(data_root.path().to_path_buf()).expect("test data root must be absolute");
     set_file_generation_consent(&state, true).expect("planning consent should be persisted");
 
     let plan = plan_file_generation(
@@ -70,7 +72,8 @@ fn desktop_command_plans_files_through_the_shared_core() {
 #[test]
 fn desktop_planning_does_not_probe_paths_before_consent() {
     let destination = tempfile::tempdir().expect("destination should be created");
-    let state = DesktopState::new(destination.path().join("data"));
+    let state = DesktopState::new(destination.path().join("data"))
+        .expect("test data root must be absolute");
 
     let error = plan_file_generation(
         &state,
@@ -90,7 +93,8 @@ fn desktop_planning_does_not_probe_paths_before_consent() {
 fn desktop_execution_is_authorized_in_rust_and_returns_each_file() {
     let workspace = tempfile::tempdir().expect("workspace should be created");
     let destination = workspace.path().join("output");
-    let state = DesktopState::new(workspace.path().join("data"));
+    let state =
+        DesktopState::new(workspace.path().join("data")).expect("test data root must be absolute");
     let request = || FileGenerationRequest {
         template_json: template_json(),
         destination: destination.clone(),
@@ -127,7 +131,8 @@ fn desktop_execution_rejects_a_destination_changed_after_preview() {
     let workspace = tempfile::tempdir().expect("workspace should be created");
     let destination = workspace.path().join("output");
     std::fs::create_dir_all(&destination).expect("destination should be created");
-    let state = DesktopState::new(workspace.path().join("data"));
+    let state =
+        DesktopState::new(workspace.path().join("data")).expect("test data root must be absolute");
     set_file_generation_consent(&state, true).expect("consent should be persisted");
     let request = FileGenerationRequest {
         template_json: template_json(),
@@ -160,7 +165,8 @@ fn desktop_execution_rejects_an_overwrite_target_changed_after_preview() {
     std::fs::create_dir_all(&destination).expect("destination should be created");
     std::fs::write(destination.join("README.md"), "original\n")
         .expect("original file should be created");
-    let state = DesktopState::new(workspace.path().join("data"));
+    let state =
+        DesktopState::new(workspace.path().join("data")).expect("test data root must be absolute");
     set_file_generation_consent(&state, true).expect("consent should be persisted");
     let request = FileGenerationRequest {
         template_json: template_json(),
@@ -195,7 +201,8 @@ fn desktop_execution_rejects_an_overwrite_target_changed_after_preview() {
 #[test]
 fn desktop_planning_rejects_empty_destinations_and_oversized_templates() {
     let data_root = tempfile::tempdir().expect("data root should be created");
-    let state = DesktopState::new(data_root.path().to_path_buf());
+    let state =
+        DesktopState::new(data_root.path().to_path_buf()).expect("test data root must be absolute");
     set_file_generation_consent(&state, true).expect("consent should be persisted");
     let base = FileGenerationRequest {
         template_json: template_json(),

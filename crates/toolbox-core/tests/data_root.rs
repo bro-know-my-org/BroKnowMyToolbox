@@ -4,10 +4,6 @@ use toolbox_core::{
     DataRootCandidates, DataRootDiscovery, DataRootSource, discover_data_root, resolve_data_root,
 };
 
-fn path(value: &str) -> PathBuf {
-    PathBuf::from(value)
-}
-
 #[test]
 fn portable_marker_selects_a_data_directory_beside_the_executable() {
     let package = tempfile::tempdir().expect("portable package should be created");
@@ -20,7 +16,7 @@ fn portable_marker_selects_a_data_directory_beside_the_executable() {
         environment: None,
         executable,
         portable_requested: false,
-        system: path("/system"),
+        system: package.path().join("system"),
     })
     .expect("portable data root should resolve");
 
@@ -49,6 +45,8 @@ fn unwritable_portable_location_falls_back_to_the_system_data_root() {
 
 #[test]
 fn data_root_uses_the_highest_priority_available_candidate() {
+    let root = tempfile::tempdir().expect("absolute fixture root should exist");
+    let path = |value: &str| root.path().join(value.trim_start_matches('/'));
     let cases = [
         (
             DataRootCandidates {
@@ -145,4 +143,28 @@ fn relative_environment_roots_are_rejected() {
     .expect_err("relative environment root should be ambiguous");
 
     assert!(error.to_string().contains("must be absolute"));
+}
+
+#[test]
+fn discovery_and_resolution_agree_on_empty_overrides() {
+    use toolbox_core::DataRootError;
+    for source in [DataRootSource::Explicit, DataRootSource::Environment] {
+        let explicit = (source == DataRootSource::Explicit).then(PathBuf::new);
+        let environment = (source == DataRootSource::Environment).then(PathBuf::new);
+        let discovered = discover_data_root(DataRootDiscovery {
+            explicit: explicit.clone(),
+            environment: environment.clone(),
+            executable: PathBuf::new(),
+            portable_requested: true,
+            system: PathBuf::new(),
+        });
+        let resolved = resolve_data_root(DataRootCandidates {
+            explicit,
+            environment,
+            portable: None,
+            system: PathBuf::new(),
+        });
+        assert_eq!(discovered, Err(DataRootError::EmptyPath(source)));
+        assert_eq!(discovered, resolved);
+    }
 }

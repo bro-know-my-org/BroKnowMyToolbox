@@ -31,7 +31,8 @@ fn spark_host_authorizer_uses_the_shared_persisted_consent_store() {
 #[test]
 fn desktop_can_persist_a_spark_consent_decision_for_the_plugin_gate() {
     let data_root = tempfile::tempdir().expect("data root should be created");
-    let state = DesktopState::new(data_root.path().to_path_buf());
+    let state =
+        DesktopState::new(data_root.path().to_path_buf()).expect("test data root must be absolute");
 
     set_spark_consent(&state, "credentials:ai", true).expect("desktop consent should be persisted");
 
@@ -79,7 +80,8 @@ fn toolbox_spark_plugin_ipc_is_gated_by_the_shared_rust_consent_store() {
     assert!(denied.contains("consent_required"));
     assert!(denied.contains("network:spark"));
 
-    let state = DesktopState::new(data_root.path().to_path_buf());
+    let state =
+        DesktopState::new(data_root.path().to_path_buf()).expect("test data root must be absolute");
     set_spark_consent(&state, "network:spark", true)
         .expect("desktop should persist network consent");
     let after_consent = invoke();

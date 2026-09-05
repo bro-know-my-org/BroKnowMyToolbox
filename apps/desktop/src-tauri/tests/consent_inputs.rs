@@ -13,7 +13,7 @@ fn symlinked_consent_cannot_enable_desktop_writes() {
     .unwrap();
     std::os::unix::fs::symlink(&outside, data.join("config/consents.json")).unwrap();
     let destination = root.path().join("output");
-    let state = DesktopState::new(data);
+    let state = DesktopState::new(data).expect("test data root must be absolute");
     let error = execute_file_generation(
         &state,
         FileGenerationRequest {

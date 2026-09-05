@@ -88,9 +88,6 @@ fn writable_portable_data_root(path: PathBuf) -> Option<PathBuf> {
 
 pub fn discover_data_root(discovery: DataRootDiscovery) -> Result<ResolvedDataRoot, DataRootError> {
     if let Some(path) = discovery.explicit {
-        if !path.is_absolute() {
-            return Err(DataRootError::RelativePath(DataRootSource::Explicit));
-        }
         return resolve_data_root(DataRootCandidates {
             explicit: Some(path),
             environment: None,
@@ -99,9 +96,6 @@ pub fn discover_data_root(discovery: DataRootDiscovery) -> Result<ResolvedDataRo
         });
     }
     if let Some(path) = discovery.environment {
-        if !path.is_absolute() {
-            return Err(DataRootError::RelativePath(DataRootSource::Environment));
-        }
         return resolve_data_root(DataRootCandidates {
             explicit: None,
             environment: Some(path),
