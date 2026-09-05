@@ -14,7 +14,6 @@ export default tseslint.config(
     languageOptions: {
       globals: {
         ...globals.browser,
-        __BKMT_VERSION__: "readonly",
       },
       parserOptions: {
         parser: tseslint.parser,
