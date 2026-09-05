@@ -10,7 +10,7 @@
 
 文件生成路径在所有平台采用同一便携命名规则：拒绝 Windows 设备保留名、非法字符、尾随点/空格及 `.`、空路径段等别名。重复路径与文件/目录前缀冲突按不区分大小写的键检查；覆盖只针对普通文件，已有目录、符号链接及其他特殊目标保持冲突，不作为可覆盖文件。
 
-新建输出在已约束的父目录句柄内安装完整临时文件：Linux/macOS 使用 no-replace rename，Windows 使用 `SetFileInformationByHandle(FileRenameInfo)` 且禁止替换。这些路径不依赖硬链接；Unix 系统调用或文件系统不支持 no-replace rename 时，只回退到同样拒绝覆盖的硬链接。两种机制均不可用则逐文件报错，不回退到普通覆盖式 rename 或直接写入最终路径。该保证只针对新建操作，不代表覆盖操作已经具备原子 compare-and-replace。
+新建输出在已约束的父目录句柄内安装完整临时文件：Linux/macOS 使用 no-replace rename，Windows 使用用户态 `NtSetInformationFile(FileRenameInformation)`，明确传入目标父目录句柄并禁止替换，NTSTATUS 转换为系统错误码。这些路径不依赖硬链接；Unix 系统调用或文件系统不支持 no-replace rename 时，只回退到同样拒绝覆盖的硬链接。两种机制均不可用则逐文件报错，不回退到普通覆盖式 rename 或直接写入最终路径。该保证只针对新建操作，不代表覆盖操作已经具备原子 compare-and-replace。
 
 覆盖计划的 `targetRevision` 是不透明的版本值，结合完整内容的 SHA-256、文件身份、大小、修改时间及平台状态信息；调用方只应原样回传或比较，不解析内部格式。预览与执行共用单句柄、no-follow 的检查，读取限制在选定目录 capability 内，使用固定缓冲区且最多读取打开时长度加一字节，拒绝特殊文件或检查期间可检测到的变化。已有目标必须可读才能校验；大文件会增加预览与执行的检查耗时。无法读取或变化检测失败时拒绝覆盖，不退回只比较大小/时间戳。内容本身不进入传输或日志。
 
@@ -31,7 +31,7 @@
 
 ## Spark 阻断项
 
-Spark Analyzer 工作树已经显式启用三个目标平台的 `keyring` backend，并以跨 Entry、跨进程测试防止退回 mock store。Toolbox 发布集成前仍需取得三平台 CI 证据和包含修复的新版本；不得通过前端缓存或明文文件绕过该门禁。
+Spark Analyzer 已显式启用三个目标平台的 `keyring` backend，并以跨 Entry、跨进程测试防止退回 mock store；这些测试已通过上游三平台 CI，修复随 `0.1.2` 发布。Toolbox 自身的最终集成验收仍必须通过；不得通过前端缓存或明文文件绕过凭据门禁。
 
 `bkmsa-tauri` 现在通过小型 `HostAuthorizer` interface 让宿主强制网络、凭据和导出写入能力。Toolbox adapter 把它映射到工具目录和共享 `consents.json`；Spark 页面只有在 Rust 拒绝后才展示授权说明，允许后由 Rust 持久化并重试。上游独立应用继续使用默认 authorizer，不依赖 Toolbox 核心。
 

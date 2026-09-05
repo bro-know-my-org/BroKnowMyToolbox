@@ -49,6 +49,37 @@ fn execution_writes_the_plan_and_reports_each_file() {
 }
 
 #[test]
+fn execution_installs_short_and_unicode_names_in_their_parent_directories() {
+    let destination = tempfile::tempdir().expect("destination should be created");
+    let names = ["a", "子目录/报告😀.md", "nested/file.txt"];
+    let generator = FileGenerator::new();
+    let plan = generator
+        .plan(GenerationRequest {
+            destination: destination.path().to_path_buf(),
+            files: names
+                .iter()
+                .map(|name| TemplateFile {
+                    path: (*name).to_string(),
+                    content: format!("generated {name}\n"),
+                })
+                .collect(),
+            variables: BTreeMap::new(),
+            overwrite: false,
+        })
+        .expect("generation should be planned");
+
+    let report = generator.execute(&plan);
+    assert_eq!(report.files().len(), names.len());
+    for (file, name) in report.files().iter().zip(names) {
+        assert_eq!(file.outcome, FileOutcome::Created, "{file:?}");
+        assert_eq!(
+            std::fs::read_to_string(destination.path().join(name)).expect("generated file"),
+            format!("generated {name}\n")
+        );
+    }
+}
+
+#[test]
 fn execution_skips_conflicts_without_changing_existing_files() {
     let destination = tempfile::tempdir().expect("destination should be created");
     std::fs::write(destination.path().join("README.md"), "keep me\n")
