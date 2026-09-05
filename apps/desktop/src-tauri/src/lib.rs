@@ -5,11 +5,11 @@ mod update;
 
 pub use commands::{
     CommandError, ExecutedFileOutput, FileGenerationPlanOutput, FileGenerationReportOutput,
-    FileGenerationRequest, FileTemplateEntry, PlannedFileOutput, ReviewedFileInput,
-    RuntimeDiagnostics, SparkPreferences, SparkPreferencesError, execute_file_generation,
-    list_file_templates, load_app_config, load_locale_override, load_spark_preferences,
-    plan_file_generation, runtime_diagnostics, save_app_config, save_spark_preferences,
-    save_user_template, set_file_generation_consent,
+    FileGenerationRequest, FileTemplateCatalog, FileTemplateEntry, PlannedFileOutput,
+    ReviewedFileInput, RuntimeDiagnostics, SparkPreferences, SparkPreferencesError,
+    execute_file_generation, list_file_templates, load_app_config, load_locale_override,
+    load_spark_preferences, plan_file_generation, runtime_diagnostics, save_app_config,
+    save_spark_preferences, save_user_template, set_file_generation_consent,
 };
 pub use spark_authorization::{SparkHostAuthorizer, set_spark_consent};
 pub use state::DesktopState;

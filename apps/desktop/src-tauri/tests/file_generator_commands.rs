@@ -33,6 +33,8 @@ fn desktop_template_catalog_includes_built_in_and_persisted_user_templates() {
     set_file_generation_consent(&state, true).expect("consent should be persisted");
     save_user_template(&state, template_json()).expect("user template should be persisted");
     let templates = list_file_templates(&state).expect("template catalog should load");
+    assert!(templates.warnings.is_empty());
+    let templates = templates.templates;
 
     assert!(
         templates

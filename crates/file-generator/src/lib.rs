@@ -6,6 +6,8 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use cap_std::ambient_authority;
 use cap_std::fs::{Dir, OpenOptions};
 
+pub mod templates;
+
 const MAX_RENDERED_OUTPUT_BYTES: usize = 64 * 1024 * 1024;
 
 pub const BASIC_README_TEMPLATE_JSON: &str = r##"{

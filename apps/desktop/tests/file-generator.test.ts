@@ -5,7 +5,7 @@ import {
   screen,
   waitFor,
 } from "@testing-library/vue";
-import { afterEach, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, expect, test, vi } from "vitest";
 
 import FileGeneratorView from "../src/views/tools/file-generator/index.vue";
 import { createAppI18n } from "../src/i18n";
@@ -21,12 +21,57 @@ const api = vi.hoisted(() => ({
 
 vi.mock("../src/api/file-generator", () => api);
 
-afterEach(() => {
-  cleanup();
-  vi.clearAllMocks();
+beforeEach(() => {
+  vi.resetAllMocks();
+  api.listFileTemplates.mockResolvedValue({ templates: [], warnings: [] });
 });
+afterEach(cleanup);
 
-api.listFileTemplates.mockResolvedValue([]);
+test("template warnings remain visible while valid templates work and clear after recovery", async () => {
+  const valid = {
+    id: "valid",
+    title: "Valid",
+    source: "user",
+    templateJson: JSON.stringify({
+      schemaVersion: 1,
+      id: "valid",
+      title: "Valid",
+      variables: [],
+      files: [{ path: "safe.txt", content: "safe" }],
+    }),
+  };
+  api.listFileTemplates
+    .mockResolvedValueOnce({
+      templates: [valid],
+      warnings: [
+        {
+          fileName: "broken.json",
+          code: "invalid_template",
+          message: "invalid JSON",
+        },
+      ],
+    })
+    .mockResolvedValueOnce({ templates: [valid], warnings: [] });
+  api.planFileGeneration.mockResolvedValue({
+    status: "planned",
+    files: [{ path: "safe.txt", action: "create" }],
+  });
+  api.saveUserTemplate.mockResolvedValue(valid);
+  render(FileGeneratorView, { global: { plugins: [createAppI18n()] } });
+  const warning = await screen.findByRole("alert");
+  expect(warning.textContent).toContain("broken.json");
+  expect(warning.textContent).toContain("模板内容无效");
+  await fireEvent.update(screen.getByLabelText("目标目录"), "/tmp/demo");
+  await fireEvent.click(screen.getByRole("button", { name: "预览生成计划" }));
+  await screen.findByText("safe.txt");
+  expect(api.planFileGeneration).toHaveBeenCalledWith(
+    expect.objectContaining({ templateJson: valid.templateJson }),
+  );
+  await fireEvent.click(screen.getByText("编辑模板 JSON"));
+  await fireEvent.click(screen.getByRole("button", { name: "保存为用户模板" }));
+  await waitFor(() => expect(screen.queryByRole("alert")).toBeNull());
+  expect(api.listFileTemplates).toHaveBeenCalledTimes(2);
+});
 
 test("users can preview and execute a file generation plan", async () => {
   api.planFileGeneration.mockResolvedValue({

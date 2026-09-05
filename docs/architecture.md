@@ -49,6 +49,7 @@ docs/
 ## Interface 与 seam
 
 - 文件生成器的外部 interface 是“生成计划”和“执行计划”；执行使用 `cap-std` 目录 capability 限制真实文件系统写入，测试在临时真实目录中验证路径和竞态防护。
+- 模板目录读取由 `file-generator::templates` 统一实现，调用方显式传入模板目录；它返回有效模板与逐文件结构化警告，目录级读取失败仍为错误。GUI/CLI adapter 只映射传输与展示，单个坏模板不再阻断其他模板的发现。
 - Spark 的 seam 由其发布包定义；Toolbox 只编写宿主 adapter。
 - Spark 原生 plugin 通过 `HostAuthorizer` seam 请求网络、凭据或导出写入，Toolbox adapter 将其映射到共享能力策略；上游不导入 Toolbox 类型。
 - 配置根目录、授权存储和凭据存储各有明确 interface，GUI/CLI 使用相同实现。

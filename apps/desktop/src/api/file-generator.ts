@@ -41,6 +41,17 @@ export interface FileTemplateEntry {
   templateJson: string;
 }
 
+export interface FileTemplateWarning {
+  fileName: string;
+  code: string;
+  message: string;
+}
+
+export interface FileTemplateCatalog {
+  templates: FileTemplateEntry[];
+  warnings: FileTemplateWarning[];
+}
+
 export function planFileGeneration(
   request: FileGenerationRequest,
 ): Promise<FileGenerationPlan> {
@@ -58,7 +69,7 @@ export function setFileGenerationConsent(allowed: boolean): Promise<void> {
   return invoke("set_file_generation_consent_command", { allowed });
 }
 
-export function listFileTemplates(): Promise<FileTemplateEntry[]> {
+export function listFileTemplates(): Promise<FileTemplateCatalog> {
   return invoke("list_file_templates_command");
 }
 

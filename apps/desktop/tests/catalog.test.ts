@@ -35,7 +35,8 @@ beforeEach(() => {
     if (command === "load_locale_override_command") return {};
     if (command === "runtime_diagnostics_command")
       return { dataRoot: "/tmp/toolbox", dataRootSource: "system" };
-    if (command === "list_file_templates_command") return [];
+    if (command === "list_file_templates_command")
+      return { templates: [], warnings: [] };
     throw new Error(`Unexpected command: ${command}`);
   });
 });

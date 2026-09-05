@@ -9,9 +9,9 @@ pub use diagnostics::{RuntimeDiagnostics, runtime_diagnostics};
 
 pub use file_generator::{
     CommandError, ExecutedFileOutput, FileGenerationPlanOutput, FileGenerationReportOutput,
-    FileGenerationRequest, FileTemplateEntry, PlannedFileOutput, ReviewedFileInput,
-    execute_file_generation, list_file_templates, plan_file_generation, save_user_template,
-    set_file_generation_consent,
+    FileGenerationRequest, FileTemplateCatalog, FileTemplateEntry, PlannedFileOutput,
+    ReviewedFileInput, execute_file_generation, list_file_templates, plan_file_generation,
+    save_user_template, set_file_generation_consent,
 };
 pub use locale::load_locale_override;
 pub use spark_preferences::{

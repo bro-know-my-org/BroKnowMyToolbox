@@ -26,7 +26,11 @@ fn one_mib_template_round_trips_exactly_and_remains_plannable() {
         save_user_template(&state, source.clone()).unwrap();
         assert_eq!(std::fs::read(&stored).unwrap(), source.as_bytes());
         let catalog = list_file_templates(&state).unwrap();
-        let entry = catalog.iter().find(|entry| entry.id == "boundary").unwrap();
+        let entry = catalog
+            .templates
+            .iter()
+            .find(|entry| entry.id == "boundary")
+            .unwrap();
         assert_eq!(entry.template_json, source);
         let plan = plan_file_generation(
             &state,

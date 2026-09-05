@@ -24,6 +24,7 @@ import {
   type FileGenerationReport,
   type FileGenerationRequest,
   type FileTemplateEntry,
+  type FileTemplateWarning,
 } from "../../../api/file-generator";
 
 const { t } = useI18n();
@@ -50,6 +51,7 @@ const consentRequired = ref(false);
 const pendingConsentAction = ref<"save" | "preview" | "execute" | null>(null);
 const busy = ref(false);
 const templates = ref<FileTemplateEntry[]>([]);
+const templateWarnings = ref<FileTemplateWarning[]>([]);
 const selectedTemplateId = ref<string | null>(null);
 let templateRevision = 0;
 let templateRequest = 0;
@@ -117,7 +119,8 @@ async function refreshTemplates(preferredId?: string) {
   try {
     const nextTemplates = await listFileTemplates();
     if (requestId !== templateRequest) return;
-    templates.value = nextTemplates;
+    templates.value = nextTemplates.templates;
+    templateWarnings.value = nextTemplates.warnings;
     if (templateRevision === startingRevision) {
       selectedTemplateId.value =
         templates.value.find((template) => template.id === preferredId)?.id ??
@@ -353,6 +356,24 @@ async function denyConsent() {
         </template>
       </NCard>
     </div>
+
+    <NAlert
+      v-if="templateWarnings.length"
+      :show-icon="false"
+      type="warning"
+      :title="t('file_generator.template_warnings')"
+    >
+      <ul>
+        <li
+          v-for="(warning, index) in templateWarnings"
+          :key="`${warning.fileName}-${index}`"
+          :title="warning.message"
+        >
+          {{ warning.fileName }}:
+          {{ t(`file_generator.template_warning.${warning.code}`) }}
+        </li>
+      </ul>
+    </NAlert>
 
     <NAlert
       v-if="consentRequired"

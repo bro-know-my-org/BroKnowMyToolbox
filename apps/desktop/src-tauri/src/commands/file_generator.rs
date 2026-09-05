@@ -1,10 +1,10 @@
 use std::collections::BTreeMap;
-use std::io::{Read, Write};
+use std::io::Write;
 use std::path::PathBuf;
 
 use crate::DesktopState;
 
-const MAX_USER_TEMPLATE_BYTES: u64 = 1024 * 1024;
+use file_generator::templates::MAX_USER_TEMPLATE_BYTES;
 
 #[derive(Debug, Clone, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -67,6 +67,12 @@ pub struct FileTemplateEntry {
     pub template_json: String,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
+pub struct FileTemplateCatalog {
+    pub templates: Vec<FileTemplateEntry>,
+    pub warnings: Vec<file_generator::templates::TemplateWarning>,
+}
+
 fn template_directory(state: &DesktopState) -> PathBuf {
     state
         .data_root
@@ -91,88 +97,30 @@ fn template_entry(template_json: String, source: &str) -> Result<FileTemplateEnt
     })
 }
 
-pub fn list_file_templates(state: &DesktopState) -> Result<Vec<FileTemplateEntry>, CommandError> {
-    let mut templates = vec![template_entry(
-        file_generator::BASIC_README_TEMPLATE_JSON.to_string(),
-        "built_in",
-    )?];
-    let directory = template_directory(state);
-    if !directory.try_exists().map_err(|error| CommandError {
-        code: "template_storage_failed".to_string(),
-        message: error.to_string(),
-    })? {
-        return Ok(templates);
-    }
-    let entries = std::fs::read_dir(&directory).map_err(|error| CommandError {
-        code: "template_storage_failed".to_string(),
-        message: error.to_string(),
-    })?;
-    for entry in entries {
-        let entry = entry.map_err(|error| CommandError {
-            code: "template_storage_failed".to_string(),
+pub fn list_file_templates(state: &DesktopState) -> Result<FileTemplateCatalog, CommandError> {
+    let catalog = file_generator::templates::load_template_catalog(&template_directory(state))
+        .map_err(|error| CommandError {
+            code: if error.code() == "template_unreadable" {
+                "template_storage_failed"
+            } else {
+                error.code()
+            }
+            .to_owned(),
             message: error.to_string(),
         })?;
-        let file_type = entry.file_type().map_err(|error| CommandError {
-            code: "template_storage_failed".to_string(),
-            message: error.to_string(),
-        })?;
-        if !file_type.is_file()
-            || entry.path().extension().and_then(|value| value.to_str()) != Some("json")
-        {
-            continue;
-        }
-        let mut file = std::fs::File::open(entry.path()).map_err(|error| CommandError {
-            code: "template_storage_failed".to_string(),
-            message: error.to_string(),
-        })?;
-        let metadata = file.metadata().map_err(|error| CommandError {
-            code: "template_storage_failed".to_string(),
-            message: error.to_string(),
-        })?;
-        if metadata.len() > MAX_USER_TEMPLATE_BYTES {
-            return Err(CommandError {
-                code: "user_template_too_large".to_string(),
-                message: format!("user template exceeds 1 MiB: {}", entry.path().display()),
-            });
-        }
-        let mut bytes = Vec::with_capacity(metadata.len() as usize);
-        std::io::Read::by_ref(&mut file)
-            .take(MAX_USER_TEMPLATE_BYTES + 1)
-            .read_to_end(&mut bytes)
-            .map_err(|error| CommandError {
-                code: "template_storage_failed".to_string(),
-                message: error.to_string(),
-            })?;
-        if bytes.len() as u64 > MAX_USER_TEMPLATE_BYTES {
-            return Err(CommandError {
-                code: "user_template_too_large".to_string(),
-                message: format!("user template exceeds 1 MiB: {}", entry.path().display()),
-            });
-        }
-        let template_json = String::from_utf8(bytes).map_err(|error| CommandError {
-            code: "invalid_template".to_string(),
-            message: error.to_string(),
-        })?;
-        let template = template_entry(template_json, "user")?;
-        if entry.path().file_stem().and_then(|value| value.to_str()) != Some(&template.id) {
-            return Err(CommandError {
-                code: "invalid_template_id".to_string(),
-                message: format!("user template filename must match id: {}", template.id),
-            });
-        }
-        if templates.iter().any(|built_in| built_in.id == template.id) {
-            return Err(CommandError {
-                code: "invalid_template_id".to_string(),
-                message: format!(
-                    "user template id is reserved by a built-in template: {}",
-                    template.id
-                ),
-            });
-        }
-        templates.push(template);
-    }
-    templates[1..].sort_by(|left, right| left.id.cmp(&right.id));
-    Ok(templates)
+    Ok(FileTemplateCatalog {
+        templates: catalog
+            .templates
+            .into_iter()
+            .map(|entry| FileTemplateEntry {
+                id: entry.definition.id,
+                title: entry.definition.title,
+                source: entry.source.as_str().to_owned(),
+                template_json: entry.json,
+            })
+            .collect(),
+        warnings: catalog.warnings,
+    })
 }
 
 pub fn save_user_template(
@@ -473,7 +421,7 @@ pub async fn execute_file_generation_command(
 #[tauri::command]
 pub async fn list_file_templates_command(
     state: tauri::State<'_, DesktopState>,
-) -> Result<Vec<FileTemplateEntry>, CommandError> {
+) -> Result<FileTemplateCatalog, CommandError> {
     let state = state.inner().clone();
     tauri::async_runtime::spawn_blocking(move || list_file_templates(&state))
         .await

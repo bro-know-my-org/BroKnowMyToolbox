@@ -30,6 +30,8 @@ bkmt spark analyze <REPORT> [--text] [--base-url URL] [--model MODEL] [--tempera
 
 `bkmt file templates` 列出共享核心的内置模板，以及数据根目录 `tools/file-generator/templates/` 中文件名与模板 ID 一致的用户模板。`file create --template @basic-readme` 通过 ID 使用内置模板；`@<id>` 也可以解析同一数据根中的用户模板。普通文件路径继续有效。
 
+单个坏用户模板会被列表跳过，并在 stderr 输出警告；有效模板列表仍成功返回。`--json` 的 stdout 保持原有数组，stderr 每行一条 JSON 警告，包含 `level: "warning"`、`fileName`、`code` 和 `message`。目录整体读取失败仍退出 2；显式 `--template @<id>` 或文件路径读取失败也仍退出 2，不会悄悄回退到其他模板。
+
 首版模板 schema：
 
 ```json
