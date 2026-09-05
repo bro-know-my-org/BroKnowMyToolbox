@@ -216,3 +216,20 @@ test("failed settings saves keep the draft available for retry", async () => {
     ).toBe(false),
   );
 });
+
+test("structured runtime diagnostic failures remain visible in settings", async () => {
+  const original = native.invoke.getMockImplementation()!;
+  native.invoke.mockImplementation((command: string, ...args: unknown[]) => {
+    if (command === "runtime_diagnostics_command")
+      return Promise.reject({
+        code: "data_root_not_unicode",
+        message: "the data directory cannot be represented as UTF-8",
+      });
+    return original(command, ...args);
+  });
+  await renderSettings();
+  const alert = await screen.findByRole("alert");
+  expect(alert.textContent).toContain("读取实际数据目录失败");
+  expect(alert.textContent).toContain("cannot be represented as UTF-8");
+  expect(alert.textContent).not.toContain("[object Object]");
+});

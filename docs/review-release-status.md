@@ -13,6 +13,8 @@
 
 ## 基线意见跟踪
 
+诊断批次已完成：GUI 与 CLI JSON 对非 UTF-8 路径统一返回 `data_root_not_unicode`，不改变实际数据位置；数据源使用封闭枚举，GUI 显示结构化诊断错误。Rust 诊断回归 4 项、设置 UI 9 项、lint/typecheck/Clippy/格式与文档检查通过。OCR 会话 `a3c3f47a-8863-4304-ba08-78b016ed14f6` 的唯一意见称缺少 UI 回归测试；已核实 `settings-ui.test.ts` 中 `structured runtime diagnostic failures remain visible in settings` 正是该场景且运行通过，故为误报，无剩余可执行意见。
+
 数据路径批次已完成：显式 DesktopState 构造复用共享路径校验，discovery 与 resolver 对空覆盖目录返回同一错误；优先级测试的候选目录全部来自绝对临时路径。OCR 会话 `b4c5e10f-1d37-476e-be34-f4e3b7227d7c` 零意见；toolbox-core、CLI、桌面所有 Rust target 测试及 Clippy 通过。
 
 更新检查批次已完成：正式仓库为 `bro-know-my-org/BroKnowMyToolbox`，公开 API 返回 200；原连字符 slug 返回 404。已统一 API、Cargo 元数据、opener 白名单和发布测试引用；下载 URL 必须匹配同一仓库和 tag，application identifier 不变。OCR 会话 `ac6d87bc-d197-43f5-9520-0ada9111b63d` 零意见；更新检查 4 项、设置 UI 8 项及发布脚本 4 项测试与桌面 Clippy 通过。
@@ -38,9 +40,9 @@
 | 10、16 | CI/release 使用未固定的 Spark checkout               | 待上游修复发布后统一固定依赖                               |
 | 11–15  | 文档链接解析的转义、标题、代码跨度和片段边界         | 待核实并补充测试                                           |
 | 17     | Linux RPM 构建依赖                                   | 待核实                                                     |
-| 18     | 非 UTF-8 数据路径诊断                                | 待核实                                                     |
+| 18     | 非 UTF-8 数据路径诊断                                | 已修复，见诊断批次                                         |
 | 19     | 更新下载 URL 限制到正式仓库                          | 已修复，见更新检查批次                                     |
-| 20–21  | 运行时数据源类型、诊断错误展示                       | 待核实                                                     |
+| 20–21  | 运行时数据源类型、诊断错误展示                       | 已修复，见诊断批次                                         |
 | 22–23  | 语言包符号链接越界和 FIFO 阻塞                       | 已修复，见语言包读取批次                                   |
 | 24     | 设置保存期间关闭、重新打开和重复提交竞态             | 已修复，见前端状态批次                                     |
 | 25–26  | 系统语言变化和语言包覆盖累积                         | 已修复，见前端状态批次                                     |

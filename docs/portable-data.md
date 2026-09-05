@@ -27,6 +27,8 @@ Spark Analyzer 的 provider、base URL、模型和 temperature 等非敏感偏�
 
 当前路径模块在选择便携目录前创建 `data/` 并用临时文件验证可写性；失败时返回 `system` 来源。CLI 的 `diagnostics data-dir` 与桌面设置中的“实际数据目录”均展示最终路径和来源。
 
+若 Unix 路径含无法表示为 UTF-8 的字节，桌面诊断和 CLI JSON 诊断返回 `data_root_not_unicode`，不以替换字符伪造另一条路径；桌面设置会展示诊断错误。路径本身仍可用于文件系统操作；CLI 人类输出仅供展示，可能包含替换字符，不能用于还原原始路径。
+
 ## 解析优先级
 
 1. CLI `--data-dir` 或等价显式调用参数。

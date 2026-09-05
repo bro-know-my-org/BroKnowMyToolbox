@@ -20,7 +20,13 @@ export const useRuntimeStore = defineStore("runtime", () => {
           diagnostics.value = await loadRuntimeDiagnostics();
           loadError.value = null;
         } catch (error) {
-          loadError.value = String(error);
+          loadError.value =
+            typeof error === "object" &&
+            error !== null &&
+            "message" in error &&
+            typeof error.message === "string"
+              ? error.message
+              : String(error);
         } finally {
           initialized.value = true;
           initializePromise = null;

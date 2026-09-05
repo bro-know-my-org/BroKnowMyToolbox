@@ -46,6 +46,7 @@
   "settings.load_failed": "Failed to load settings",
   "settings.save_failed": "Failed to save settings",
   "settings.data_root": "Effective data directory",
+  "settings.data_root_failed": "Failed to read the effective data directory",
   "settings.data_root_source.explicit": "Explicit directory",
   "settings.data_root_source.environment": "Environment directory",
   "settings.data_root_source.portable": "Portable directory",

@@ -31,7 +31,7 @@ const { t } = useI18n();
 const settings = useSettingsStore();
 const runtime = useRuntimeStore();
 const { config, loadError, saveError } = storeToRefs(settings);
-const { diagnostics } = storeToRefs(runtime);
+const { diagnostics, loadError: diagnosticsError } = storeToRefs(runtime);
 const updateChecking = ref(false);
 const updateResult = ref<UpdateCheckResult | null>(null);
 const updateError = ref("");
@@ -236,6 +236,9 @@ async function openUpdateDownload() {
 
         <span v-if="loadError" class="settings-error">
           {{ t("settings.load_failed") }}: {{ loadError }}
+        </span>
+        <span v-if="diagnosticsError" role="alert" class="settings-error">
+          {{ t("settings.data_root_failed") }}: {{ diagnosticsError }}
         </span>
         <span v-if="saveError" class="settings-error">
           {{ t("settings.save_failed") }}: {{ saveError }}

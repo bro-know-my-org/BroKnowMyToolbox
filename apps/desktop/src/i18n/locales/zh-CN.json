@@ -46,6 +46,7 @@
   "settings.load_failed": "加载设置失败",
   "settings.save_failed": "保存设置失败",
   "settings.data_root": "实际数据目录",
+  "settings.data_root_failed": "读取实际数据目录失败",
   "settings.data_root_source.explicit": "显式目录",
   "settings.data_root_source.environment": "环境变量目录",
   "settings.data_root_source.portable": "便携目录",

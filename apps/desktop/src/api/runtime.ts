@@ -2,7 +2,7 @@ import { invoke } from "@tauri-apps/api/core";
 
 export interface RuntimeDiagnostics {
   dataRoot: string;
-  dataRootSource: string;
+  dataRootSource: "explicit" | "environment" | "portable" | "system";
 }
 
 export function loadRuntimeDiagnostics(): Promise<RuntimeDiagnostics> {
