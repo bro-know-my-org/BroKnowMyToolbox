@@ -66,13 +66,13 @@ function assertValid(value: unknown): asserts value is ToolDefinition {
   }
   if (
     !Array.isArray(definition.keywords) ||
-    definition.keywords.some((entry) => typeof entry !== "string")
+    [...definition.keywords].some((entry) => typeof entry !== "string")
   ) {
     invalid("keywords", definition.keywords);
   }
   if (
     !Array.isArray(definition.capabilities) ||
-    definition.capabilities.some((entry) => typeof entry !== "string")
+    [...definition.capabilities].some((entry) => typeof entry !== "string")
   ) {
     invalid("capabilities", definition.capabilities);
   }
@@ -106,7 +106,7 @@ function assertValid(value: unknown): asserts value is ToolDefinition {
 export function createToolCatalog(
   definitions: readonly ToolDefinition[],
 ): ToolCatalog {
-  definitions.forEach(assertValid);
+  for (const definition of definitions) assertValid(definition);
   for (const field of ["id", "route", "routeName", "cliNamespace"] as const) {
     assertUnique(definitions, field);
   }

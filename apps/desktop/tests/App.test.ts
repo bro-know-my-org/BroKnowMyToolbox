@@ -13,8 +13,18 @@ import App from "../src/App.vue";
 import { createAppI18n } from "../src/i18n";
 import { createAppRouter } from "../src/router";
 import { useSettingsStore } from "../src/stores/settings";
+import { registeredTools } from "../src/tools/registry";
 
 afterEach(cleanup);
+
+test.each(registeredTools)(
+  "$id loader resolves a Vue component, not a module namespace",
+  async (tool) => {
+    const component = await tool.component();
+    expect(component).toHaveProperty("setup", expect.any(Function));
+    expect(component).not.toHaveProperty("default");
+  },
+);
 
 async function renderApp(path = "/") {
   const router = createAppRouter();

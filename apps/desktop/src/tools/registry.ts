@@ -6,8 +6,14 @@ export interface RegisteredTool extends ToolDefinition {
 }
 
 const components: Readonly<Record<string, () => Promise<Component>>> = {
-  "file-generator": () => import("../views/tools/file-generator/index.vue"),
-  "spark-analyzer": () => import("../views/tools/spark-analyzer/index.vue"),
+  "file-generator": () =>
+    import("../views/tools/file-generator/index.vue").then(
+      (module) => module.default,
+    ),
+  "spark-analyzer": () =>
+    import("../views/tools/spark-analyzer/index.vue").then(
+      (module) => module.default,
+    ),
 };
 
 for (const id of Object.keys(components)) {

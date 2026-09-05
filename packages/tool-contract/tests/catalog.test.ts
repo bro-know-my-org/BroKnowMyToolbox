@@ -26,6 +26,24 @@ const definitions: readonly ToolDefinition[] = [
 ];
 
 describe("tool catalog", () => {
+  test("sparse definitions fail with a catalog validation error", () => {
+    expect(() => createToolCatalog(new Array<ToolDefinition>(1))).toThrowError(
+      "Invalid tool definition",
+    );
+  });
+
+  test.each([
+    ["keywords", { keywords: new Array<string>(1) }],
+    [
+      "capabilities",
+      { capabilities: new Array<ToolDefinition["capabilities"][number]>(1) },
+    ],
+  ] as const)("sparse %s are rejected before discovery", (field, sparse) => {
+    expect(() =>
+      createToolCatalog([{ ...definitions[0], ...sparse }]),
+    ).toThrowError(`Invalid tool ${field}`);
+  });
+
   test("callers can discover tools by id, namespace, and keywords", () => {
     const catalog = createToolCatalog(definitions);
 
