@@ -26,7 +26,7 @@ bkmt spark analyze <REPORT> [--text] [--base-url URL] [--model MODEL] [--tempera
 
 ## 文件生成器
 
-`bkmt file create` 读取带版本的 JSON 模板。`--var` 可重复；值按第一个 `=` 分隔。`--dry-run` 只输出生成计划，`--force` 将已有文件从 `conflict` 计划改为 `overwrite`，`--json` 选择机器输出。
+`bkmt file create` 读取带版本的 JSON 模板。`--var` 可重复；值按第一个 `=` 分隔。`--dry-run` 只输出生成计划，`--force` 将已有普通文件从 `conflict` 计划改为 `overwrite`，目录和链接等非普通目标仍为冲突；`--json` 选择机器输出。路径遵循共享的[便携命名规则](./security.md)。
 
 `bkmt file templates` 列出共享核心的内置模板，以及数据根目录 `tools/file-generator/templates/` 中文件名与模板 ID 一致的用户模板。`file create --template @basic-readme` 通过 ID 使用内置模板；`@<id>` 也可以解析同一数据根中的用户模板。普通文件路径继续有效。
 

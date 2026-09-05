@@ -1,6 +1,6 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::io::Write;
-use std::path::{Component, Path, PathBuf};
+use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
 
 use cap_std::ambient_authority;
@@ -338,7 +338,6 @@ impl FileGenerator {
     }
 
     pub fn plan(&self, request: GenerationRequest) -> Result<GenerationPlan, GenerationError> {
-        let mut rendered_paths = Vec::<PathBuf>::new();
         let mut rendered_keys = BTreeSet::new();
         let mut rendered_bytes = 0usize;
         let mut files = Vec::with_capacity(request.files.len());
@@ -355,15 +354,24 @@ impl FileGenerator {
             let relative_path = PathBuf::from(rendered_path);
             validate_relative_path(&relative_path)?;
             let path_key = relative_path.to_string_lossy().to_lowercase();
-            if !rendered_keys.insert(path_key) {
+            if rendered_keys.contains(&path_key) {
                 return Err(GenerationError::DuplicatePath(relative_path));
             }
-            if rendered_paths.iter().any(|existing| {
-                existing.starts_with(&relative_path) || relative_path.starts_with(existing)
-            }) {
+            let directory_prefix = format!("{path_key}/");
+            if rendered_keys
+                .range(directory_prefix.clone()..)
+                .next()
+                .is_some_and(|existing: &String| existing.starts_with(&directory_prefix))
+            {
                 return Err(GenerationError::PathConflict(relative_path));
             }
-            rendered_paths.push(relative_path.clone());
+            for (index, _) in path_key.match_indices('/') {
+                let parent = &path_key[..index];
+                if rendered_keys.contains(parent) {
+                    return Err(GenerationError::PathConflict(relative_path));
+                }
+            }
+            rendered_keys.insert(path_key);
             let target = request.destination.join(&relative_path);
             let target_metadata = match std::fs::symlink_metadata(&target) {
                 Ok(metadata) => Some(metadata),
@@ -375,8 +383,8 @@ impl FileGenerator {
                     ));
                 }
             };
-            let action = if target_metadata.is_some() {
-                if request.overwrite {
+            let action = if let Some(metadata) = &target_metadata {
+                if request.overwrite && metadata.is_file() {
                     FileAction::Overwrite
                 } else {
                     FileAction::Conflict
@@ -593,20 +601,34 @@ fn cap_metadata_revision(metadata: &cap_std::fs::Metadata) -> String {
 
 fn validate_relative_path(path: &Path) -> Result<(), GenerationError> {
     let text = path.to_string_lossy();
-    let bytes = text.as_bytes();
-    let windows_drive = bytes.len() >= 2 && bytes[0].is_ascii_alphabetic() && bytes[1] == b':';
-    let unsafe_component = path.components().any(|component| {
-        matches!(
-            component,
-            Component::ParentDir | Component::RootDir | Component::Prefix(_)
-        )
+    // Inspect the raw spelling: Path::components normalizes away aliases such as './'.
+    let unsafe_component = text.split('/').any(|component| {
+        let stem = component
+            .split('.')
+            .next()
+            .unwrap_or_default()
+            .trim_end_matches(' ')
+            .to_ascii_uppercase();
+        let reserved = matches!(
+            stem.as_str(),
+            "CON" | "PRN" | "AUX" | "NUL" | "CONIN$" | "CONOUT$"
+        ) || ["COM", "LPT"].iter().any(|prefix| {
+            stem.strip_prefix(prefix).is_some_and(|suffix| {
+                matches!(
+                    suffix,
+                    "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "¹" | "²" | "³"
+                )
+            })
+        });
+        component.is_empty()
+            || component.ends_with(['.', ' '])
+            || reserved
+            || component.chars().any(|character| {
+                character <= '\u{1f}'
+                    || matches!(character, '\\' | ':' | '<' | '>' | '"' | '|' | '?' | '*')
+            })
     });
-    if path.as_os_str().is_empty()
-        || unsafe_component
-        || text.contains('\\')
-        || text.contains(':')
-        || windows_drive
-    {
+    if unsafe_component {
         return Err(GenerationError::UnsafePath(path.to_path_buf()));
     }
     Ok(())
