@@ -13,6 +13,10 @@
 
 ## 基线意见跟踪
 
+新建文件安装批次已完成实现：平台差异集中在私有 `install` 模块，Linux/macOS 使用父目录句柄相对的 no-replace rename，Windows 使用禁止替换的 `FileRenameInfo`；不支持该 Unix 系统调用时保留安全硬链接回退。八个并发创建者恰好一个成功、目标目录在预览后出现时不被替换，均有真实文件系统测试。Linux 三个相关 crate 共 110 项测试及 Clippy 通过；OCR 会话 `5dcd0ba2-3e07-471c-b3c6-951ce862c957` 对五个选中文件零意见。Linux `strace` 故障注入分别令 `linkat` 返回 `EOPNOTSUPP`、令 `renameat2` 返回 `ENOSYS`，两项新测试在原生安装和硬链接回退路径均通过；不将此证据等同于 FAT/exFAT 实测。本机没有可用的 FAT/exFAT FUSE 驱动，实际可移动文件系统及 Windows/macOS 执行仍待补验。覆盖操作的版本识别和最终替换竞态（#35）未在此批次解决。
+
+Windows 编译证据补充：现有 `+stable` 同为 Rust 1.96.1 且装有 `x86_64-pc-windows-msvc` 标准库，联网取得缺失缓存后，文件生成器全部测试通过目标平台 check 与 Clippy（`-D warnings`）。CLI 的同目标 check 停在 `ring` 构建依赖：本机没有 MSVC `lib.exe`；不能据此声称 CLI 或 Windows 运行测试通过。没有安装或修改工具链。
+
 模板目录批次已完成：GUI/CLI 共用 `file-generator::templates`，有效模板与逐文件警告分开返回；损坏模板不阻断其他模板且不被修改，显式加载仍严格失败，CLI JSON stdout 保持原数组。统一单句柄、非阻塞、拒绝文件链接和 1 MiB 有界读取。首轮 OCR 指出悬空目录链接被误判为目录不存在，已修复并覆盖直接及嵌套路径；最终会话 `52525ac3-6bcf-4fbd-9477-b1a6167ef7c8` 对 16 个选中文件零意见。三个相关 Rust crate 共 108 项测试与 Clippy、前端及脚本 73 项测试、lint/typecheck/build 通过。Windows 测试尚未执行；交叉编译离线检查因缺少缓存依赖 `winx 0.36.4` 未完成，不计为 Windows 验证。
 
 报告 Windows 边界批次已完成实现：同一打开句柄的元数据若含 reparse 属性则在读取前拒绝；新增有效/悬空文件链接及目录链接回归，要求 Windows runner 具备符号链接权限或 Developer Mode，不静默跳过。OCR 会话 `ac9480f3-b67e-4b0c-a3b5-4e2ec04da78c` 零意见，本机 CLI 38 项测试与 Clippy 通过；当前只有 Linux target，新增 Windows 测试仍须真实 CI 验证。
@@ -73,7 +77,8 @@ RPM 意见已取得部分反证：本机 `tauri-bundler 2.9.4` 的 `src/bundle/l
 | 32     | 损坏用户模板恢复                                     | 已修复，见模板目录批次                                     |
 | 33     | 用户模板 1 MiB 边界                                  | 已修复，见模板大小批次                                     |
 | 34     | plan_changed 后保留过期 GUI 预览                     | 已修复，见生成计划界面批次                                 |
-| 35–36  | 覆盖 revision/最终替换竞态、无 hard-link 文件系统    | 待核实安全语义和跨平台实现                                 |
+| 35     | 覆盖 revision/最终替换竞态                           | 待核实安全语义和跨平台实现                                 |
+| 36     | 无 hard-link 文件系统的新建文件安装                  | 已实现 no-replace 安装，跨平台及实际文件系统验证待补齐     |
 | 37–39  | 生成计划路径冲突复杂度、Windows 文件名、已有目录冲突 | 已修复，见生成路径批次                                     |
 
 ## 完成证据清单

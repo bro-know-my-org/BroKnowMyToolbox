@@ -6,6 +6,7 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use cap_std::ambient_authority;
 use cap_std::fs::{Dir, OpenOptions};
 
+mod install;
 pub mod templates;
 
 const MAX_RENDERED_OUTPUT_BYTES: usize = 64 * 1024 * 1024;
@@ -496,6 +497,12 @@ fn write_file_atomically(destination: &Dir, file: &PlannedFile) -> FileOutcome {
 
     let mut options = OpenOptions::new();
     options.write(true).create_new(true);
+    #[cfg(windows)]
+    {
+        use cap_std::fs::OpenOptionsExt;
+        // Renaming the completed file by handle requires DELETE in addition to write access.
+        options.access_mode(0x4001_0000); // GENERIC_WRITE | DELETE
+    }
     let (temporary_name, mut temporary) = match (0..32).find_map(|_| {
         let name = format!(
             ".bkmt-{}-{}.tmp",
@@ -540,11 +547,13 @@ fn write_file_atomically(destination: &Dir, file: &PlannedFile) -> FileOutcome {
         }
     }
     let install_result = match file.action {
-        FileAction::Create => parent.hard_link(&temporary_name, &parent, file_name),
+        FileAction::Create => install::create(&parent, &temporary, &temporary_name, file_name),
         FileAction::Overwrite => parent.rename(&temporary_name, &parent, file_name),
         FileAction::Conflict => unreachable!("handled before writing"),
     };
-    let _ = parent.remove_file(&temporary_name);
+    if install_result.is_err() {
+        let _ = parent.remove_file(&temporary_name);
+    }
     let outcome = match install_result {
         Ok(()) if file.action == FileAction::Overwrite => FileOutcome::Overwritten,
         Ok(()) => FileOutcome::Created,
