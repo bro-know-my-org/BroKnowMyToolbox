@@ -1,7 +1,6 @@
-allowBuilds:
-  '@parcel/watcher': true
-  esbuild: true
-  protobufjs: true
+packages:
+  - "apps/desktop"
+  - "packages/*"
 
-minimumReleaseAgeExclude:
-  - '@bro-know-my/spark-analyzer@0.1.0'
+allowBuilds:
+  esbuild: true

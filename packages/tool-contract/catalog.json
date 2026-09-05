@@ -1,0 +1,27 @@
+[
+  {
+    "id": "file-generator",
+    "titleKey": "tool.file_generator.name",
+    "descriptionKey": "tool.file_generator.description",
+    "route": "/tools/file-generator",
+    "routeName": "ToolFileGenerator",
+    "cliNamespace": "file",
+    "keywords": ["file", "template", "generator", "文件", "模板"],
+    "capabilities": ["filesystem:write"]
+  },
+  {
+    "id": "spark-analyzer",
+    "titleKey": "tool.spark_analyzer.name",
+    "descriptionKey": "tool.spark_analyzer.description",
+    "route": "/tools/spark-analyzer",
+    "routeName": "ToolSparkAnalyzer",
+    "cliNamespace": "spark",
+    "keywords": ["spark", "profile", "Minecraft", "analysis"],
+    "capabilities": [
+      "credentials:ai",
+      "filesystem:read",
+      "filesystem:write",
+      "network:spark"
+    ]
+  }
+]

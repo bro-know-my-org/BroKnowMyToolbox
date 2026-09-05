@@ -1,93 +1,45 @@
-# BroKnowMyToolbox
+# Bro Know My Toolbox
 
-Tauri 2 + Vue 3 + Naive UI desktop toolbox.
+[English](./README.en.md)
 
-This repository is the forward-looking refactor line for the toolbox. The product direction is a built-in tools workbench:
+Bro Know My Toolbox 是一个跨平台桌面工具箱，同时提供一等的 `bkmt` 命令行程序。项目以少量内置工具为起点，通过共享核心模块保证桌面端和 CLI 的行为一致。
 
-- the app owns the window shell, layout, router, menu, settings, and native capabilities;
-- tools are source modules under `src/views/tools/<tool-name>/index.vue`;
-- tool metadata is registered in `src/tools/registry.ts`;
-- high-impact system actions should use explicit Rust commands.
+> 当前状态：首版功能与发布自动化正在收口；正式发布仍由 Spark Analyzer 三平台 keyring CI 与修复版本阻断。
 
-It intentionally does not rebuild the old runtime plugin platform. Do not add external plugin manifest loading, install/uninstall flows, permission grants, generated plugin bundles, or a WASM runtime unless that direction is explicitly reopened.
+## 首版范围
 
-## Spark Analyzer Integration
+- 文件生成器：模板、变量、批量生成、执行预览和安全覆盖策略。
+- Spark Analyzer：复用独立发布的 Spark Analyzer npm 包和 Rust crates。
+- Windows、Linux、macOS 构建与启动冒烟验证。
+- 安装模式和显式便携模式。
+- 简体中文、英文及用户语言包覆盖。
 
-Spark Analyzer is a built-in Toolbox page, but its implementation is shared with the standalone BroKnowMySparkAnalyzer application:
+剪贴板、运行时插件安装、遥测和静默自动更新不属于首版。
 
-```text
-@bro-know-my/spark-analyzer   Vue UI and Tauri adapter
-bkmsa-tauri                   native Tauri plugin
-bkmsa-core / bkmsa-agent      parsing, tools, diagnostics and AI agent
-```
+## 设计原则
 
-Toolbox registers `bkmsa_tauri::init()` and grants `bkmsa-tauri:default`. The frontend creates its adapter through `@bro-know-my/spark-analyzer/tauri`. Do not recreate report parsing, AI transport, or analyzer state under `src-tauri/src/commands`; changes to analysis semantics belong in the BroKnowMySparkAnalyzer Rust crates.
+- 工具是编译进应用的内置模块，不是运行时插件。
+- 业务能力只实现一次；桌面端和 CLI 是共享核心的 adapter。
+- 原生能力经过明确的 Rust command、最小 Tauri capability 和持久化授权检查。
+- 默认使用系统数据目录；只有显式便携标记才写入便携包的 `data/`。
+- 机器接口使用稳定错误码和字段，翻译只发生在展示层。
 
-The npm UI and Rust plugin use matching release versions. For example:
+## 文档入口
 
-```json
-"@bro-know-my/spark-analyzer": "^0.1.0"
-```
+- [领域语言](./CONTEXT.md)
+- [产品范围](./docs/product-scope.md)
+- [架构](./docs/architecture.md)
+- [实施计划](./docs/plan.md)
+- [工具开发约定](./docs/tool-development.md)
+- [CLI 约定](./docs/cli.md)
+- [数据与便携模式](./docs/portable-data.md)
+- [权限与安全](./docs/security.md)
+- [测试与发布](./docs/testing-release.md)
+- [发布操作](./docs/releasing.md)
+- [旧仓库迁移清单](./docs/migration.md)
+- [风险与阻断项](./docs/risks.md)
+- [架构决策记录](./docs/adr/)
 
-```toml
-bkmsa-tauri = "0.1.0"
-```
+## 许可证
 
-Version `0.1.0` is published to both npm and crates.io, so a normal dependency install resolves the shared frontend adapter and native plugin without repository-local links.
-
-## UI Direction
-
-The initial shell borrows the dense dark workbench style from `BroKnowMySparkAnalyzer`:
-
-- compact custom title bar;
-- dark workspace background;
-- left navigation;
-- reusable tool page and panel components in `src/components/app`;
-- built-in tool cards on the home page.
-
-## Common Commands
-
-```bash
-pnpm install
-pnpm run build
-pnpm tauri dev
-```
-
-Rust check:
-
-```bash
-cd src-tauri
-cargo check
-```
-
-When changing the embedded analyzer integration, run both the frontend build and Rust check. The standalone Analyzer repository owns the shared SDK release pipeline.
-
-## Adding A Built-In Tool
-
-1. Create `src/views/tools/<tool-name>/index.vue`.
-2. Register metadata in `src/tools/registry.ts`.
-3. Prefer shared shell components such as `ToolPage` and `ToolPanel`.
-4. Add explicit Rust commands for file, path, process, network, or other high-impact native operations.
-
-## Internationalization
-
-The app uses `vue-i18n` with centralized locale files:
-
-```text
-src/i18n/locales/zh-CN.ts
-src/i18n/locales/en-US.ts
-```
-
-User-visible text should use translation keys instead of hard-coded strings. Tool metadata should use `titleKey` and `descriptionKey` in `src/tools/registry.ts`.
-
-Suggested key shape:
-
-```text
-app.*
-nav.*
-common.*
-settings.*
-tools.<toolId>.*
-```
-
-Language switching is hot and persisted through `src/stores/settings.ts`.
+本项目使用 [Apache License 2.0](./LICENSE)。

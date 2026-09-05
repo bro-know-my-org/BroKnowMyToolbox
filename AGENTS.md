@@ -1,108 +1,34 @@
 # AGENTS.md
 
-This file is for AI coding agents working in this repository. Read it before making changes. It captures project-specific constraints that are easy to miss from code alone.
+本仓库实现 Bro Know My Toolbox。开始编码前先阅读 [CONTEXT.md](./CONTEXT.md)、[产品范围](./docs/product-scope.md) 和 [架构](./docs/architecture.md)。
 
-## Project Summary
+## 不变量
 
-This is a Tauri 2 + Vue 3 + Naive UI desktop toolbox. The current product direction is an app with built-in, modular tools.
+- 工具是编译期内置模块；工具目录是唯一注册来源。
+- 桌面端和 `bkmt` 通过共享核心获得业务行为，adapter 只处理输入输出和运行环境。
+- 文件、网络、凭据等能力通过明确 Rust interface；授权检查必须位于 Rust 侧。
+- 默认数据进入系统应用数据目录；只有显式 marker、参数或环境变量才启用便携配置。
+- 展示层负责翻译；核心返回稳定的结构化结果与错误码。
+- 首版范围以 [产品范围](./docs/product-scope.md) 为准；范围变化先更新该文档。
 
-The main app owns:
+## 按任务读取
 
-- window shell
-- layout
-- header/sidebar
-- router
-- built-in tool registration
-- native capabilities
+- 修改工具定义、注册或导航时，阅读 [工具开发约定](./docs/tool-development.md)。
+- 修改 CLI 命令或输出时，阅读 [CLI 约定](./docs/cli.md)。
+- 修改路径、配置、缓存、日志或凭据时，阅读 [数据与便携模式](./docs/portable-data.md) 和 [权限与安全](./docs/security.md)。
+- 修改 CI、构建矩阵、版本或发布渠道时，阅读 [测试与发布](./docs/testing-release.md)。
+- 迁移旧实现或 Spark 依赖时，阅读 [迁移清单](./docs/migration.md) 和 [风险](./docs/risks.md)。
+- 改变难以逆转的架构选择前，阅读 `docs/adr/`，并用后续编号记录新的取舍。
 
-Tools are source-code modules inside the app. Do not rebuild the previous hot-pluggable plugin platform unless the user explicitly asks for it.
+## 完成标准
 
-## Important Project Decisions
+- 行为变化同时覆盖共享核心的接口测试，以及受影响 adapter 的集成测试。
+- GUI 和 CLI 对同一行为返回等价结果；机器输出字段与错误码保持稳定。
+- 新增能力同时定义声明、授权体验、Rust 强制检查和最小 capability。
+- 文档只在其单一事实来源更新，链接校验通过，计划中的完成项具有可验证证据。
 
-- Runtime hot-plug plugins are no longer the current direction.
-- Do not add plugin manifest loading, plugin install/uninstall, plugin permission grants, generated plugin bundles, or a WASM plugin runtime unless explicitly requested.
-- Dynamic routing can stay, but the source is the built-in tool registry, not external manifest scanning.
-- Tools should live under `src/views/tools/<tool-name>/index.vue`.
-- Tool metadata should be registered in `src/tools/registry.ts`.
-- System capabilities should usually go through explicit Rust commands rather than generic tool/plugin action dispatch.
-- Tauri capability config is application-level and may remain while the app-level permission strategy is still being decided.
+## 工作纪律
 
-## Key Files
-
-- `README.md`: user/developer-facing overview and usage.
-- `TODO`: pending tasks only. Do not add completed work there.
-- `src/tools/registry.ts`: built-in tool metadata, menu generation, and route registration helpers.
-- `src/router/index.ts`: base router setup. Tool routes must stay mounted under `RootLayout`.
-- `src/views/tools/`: built-in tool pages.
-- `src-tauri/src/commands/`: explicit Rust commands exposed to the frontend.
-- `src/stores/`: Pinia stores for app-wide state.
-
-## Tool Registration Rules
-
-Register built-in tools in `src/tools/registry.ts`:
-
-```ts
-{
-  id: "file-creator",
-  title: "文件创建器",
-  path: "/tools/file-creator",
-  routeName: "ToolFileCreator",
-  component: () => import("../views/tools/file-creator/index.vue"),
-}
-```
-
-Routes are added under `RootLayout`. Do not add tool routes as top-level routes if they should keep AppHeader and Sidebar visible.
-
-## Native Capability Rules
-
-- Prefer explicit Rust commands for file, path, process, network, and other high-impact system operations.
-- Avoid generic action dispatch such as `execute_plugin_action` for built-in tools.
-- The file creator uses `create_file(path, content)`.
-- Frontend checks are for UX only. Real validation belongs in the backend command.
-
-## State Management
-
-Use Pinia for app-wide state. Do not add new module-level `ref` singleton stores for state that is shared across pages.
-
-Current stores:
-
-- `src/stores/debug.ts`: debug mode state, persisted to `localStorage` with key `bkm.debug.enabled`.
-- `src/stores/settings.ts`: user settings and runtime CSS variable application.
-
-Components should use `storeToRefs` when binding Pinia state with `v-model`.
-
-Runtime-adjustable visual values should be CSS Variables, not SCSS variables. SCSS can stay for style organization, but values like title bar height should be applied through variables such as `--bkm-title-bar-height`.
-
-## Commands
-
-Frontend build:
-
-```bash
-pnpm run build
-```
-
-Rust check:
-
-```bash
-cd src-tauri
-cargo check
-```
-
-Tauri development:
-
-```bash
-pnpm tauri dev
-```
-
-## Verification Notes
-
-- Run `pnpm run build` after frontend/router/tool registry changes.
-- Run `cargo check` after Rust type or command changes.
-- PowerShell sandbox may block Vite/esbuild child processes with `spawn EPERM`; rerun with escalation if needed.
-
-## Editing Rules For Agents
-
-- Preserve user changes. The worktree may be dirty.
-- Do not revert unrelated edits.
-- Keep README, TODO, and this file aligned when changing project architecture.
-- Prefer small, direct changes that preserve the built-in tool architecture.
+- 保留用户和其他代理的已有改动。
+- 使用小步、可验证的变更；相关检查通过后再进入下一阶段。
+- 不配置远程、不提交、不发布，除非用户明确要求。

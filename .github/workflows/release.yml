@@ -2,191 +2,260 @@ name: Release
 
 on:
   push:
-    tags:
-      - "v*.*.*"
+    tags: ["v*"]
   workflow_dispatch:
     inputs:
-      version:
-        description: "Release version, for example 0.1.0"
+      tag:
+        description: Existing v-prefixed tag to package
         required: true
         type: string
 
+concurrency:
+  group: release-${{ inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
 permissions:
-  contents: write
+  contents: read
 
 env:
-  APP_NAME: BroKnowMyToolbox
+  TOOLBOX_DIR: BroKnowMyToolbox
+  SPARK_DIR: BroKnowMySparkAnalyzer
 
 jobs:
+  validate:
+    name: Release quality gates
+    outputs:
+      revision: ${{ steps.source.outputs.revision }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    defaults:
+      run:
+        working-directory: BroKnowMyToolbox
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          path: BroKnowMyToolbox
+          ref: ${{ inputs.tag || github.ref }}
+
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          repository: bro-know-my-org/BroKnowMySparkAnalyzer
+          path: BroKnowMySparkAnalyzer
+
+      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
+        with:
+          version: 11.0.9
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "22"
+          cache: pnpm
+          cache-dependency-path: BroKnowMyToolbox/pnpm-lock.yaml
+
+      - uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4
+        with:
+          toolchain: 1.96.1
+          components: clippy,rustfmt
+
+      - name: Install Linux desktop dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libayatana-appindicator3-dev libwebkit2gtk-4.1-dev librsvg2-dev patchelf
+
+      - name: Build the sibling Spark UI package
+        working-directory: BroKnowMySparkAnalyzer
+        run: pnpm install --frozen-lockfile && pnpm --filter @bro-know-my/spark-analyzer build
+      - run: pnpm install --frozen-lockfile
+      - name: Verify the tag matches every workspace version
+        env:
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+        run: pnpm run release:verify -- --tag "$RELEASE_TAG"
+      - name: Resolve and verify the canonical tag revision
+        id: source
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          REVISION="$(git rev-parse --verify "refs/tags/$RELEASE_TAG^{commit}")"
+          test "$(git rev-parse HEAD)" = "$REVISION"
+          echo "revision=$REVISION" >> "$GITHUB_OUTPUT"
+      - run: pnpm run format:check
+      - run: pnpm run lint
+      - run: pnpm run typecheck
+      - run: pnpm run test
+      - run: pnpm run build
+      - run: cargo fmt --all -- --check
+      - run: cargo test --locked --workspace --all-targets
+      - run: cargo clippy --locked --workspace --all-targets -- -D warnings
+
   build:
-    name: Build ${{ matrix.asset_os }} ${{ matrix.arch }}
-    runs-on: ${{ matrix.runner }}
+    name: Build ${{ matrix.platform }} ${{ matrix.arch }}
+    needs: validate
+    runs-on: ${{ matrix.runner || matrix.os }}
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
         include:
-          - runner: windows-latest
-            asset_os: windows
-            arch: x64
-          - runner: ubuntu-latest
-            asset_os: linux
-            arch: x64
-          - runner: macos-15-intel
-            asset_os: macos
-            arch: x64
-          - runner: macos-latest
-            asset_os: macos
-            arch: arm64
-
+          - os: ubuntu-latest
+            platform: linux
+            arch: x86_64
+            target: x86_64-unknown-linux-gnu
+          - os: windows-latest
+            platform: windows
+            arch: x86_64
+            target: x86_64-pc-windows-msvc
+          - os: macos-latest
+            runner: macos-15-intel
+            platform: macos
+            arch: x86_64
+            target: x86_64-apple-darwin
+          - os: macos-latest
+            runner: macos-15
+            platform: macos
+            arch: aarch64
+            target: aarch64-apple-darwin
+    defaults:
+      run:
+        working-directory: BroKnowMyToolbox
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Resolve version
-        id: version
-        shell: bash
-        run: |
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            VERSION="${{ inputs.version }}"
-          else
-            VERSION="${GITHUB_REF_NAME#v}"
-          fi
-          VERSION="${VERSION#v}"
-          if [[ ! "${VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
-            echo "Version must look like 1.2.3 or 1.2.3-beta.1, got ${VERSION}" >&2
-            exit 1
-          fi
-          echo "version=${VERSION}" >> "${GITHUB_OUTPUT}"
-          echo "tag=v${VERSION}" >> "${GITHUB_OUTPUT}"
-
-      - name: Set up pnpm
-        uses: pnpm/action-setup@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          version: 10.32.0
+          path: BroKnowMyToolbox
+          ref: ${{ needs.validate.outputs.revision }}
 
-      - name: Set up Node
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          repository: bro-know-my-org/BroKnowMySparkAnalyzer
+          path: BroKnowMySparkAnalyzer
+
+      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
+        with:
+          version: 11.0.9
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: "22"
-          cache: "pnpm"
+          cache: pnpm
+          cache-dependency-path: BroKnowMyToolbox/pnpm-lock.yaml
 
-      - name: Set up Rust
-        uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4
+        with:
+          toolchain: 1.96.1
+          targets: ${{ matrix.target }}
 
-      - name: Install Linux dependencies
+      - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2.9.1
+        with:
+          workspaces: BroKnowMyToolbox -> target
+          key: release-${{ matrix.target }}
+
+      - name: Install Linux desktop dependencies
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y \
-            build-essential \
-            curl \
-            file \
-            libayatana-appindicator3-dev \
-            librsvg2-dev \
-            libssl-dev \
-            libwebkit2gtk-4.1-dev \
-            patchelf \
-            rpm \
-            wget
+          sudo apt-get install -y libayatana-appindicator3-dev libwebkit2gtk-4.1-dev librsvg2-dev patchelf xvfb
 
-      - name: Install frontend dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Build the sibling Spark UI package
+        working-directory: BroKnowMySparkAnalyzer
+        run: pnpm install --frozen-lockfile && pnpm --filter @bro-know-my/spark-analyzer build
+      - run: pnpm install --frozen-lockfile
+      - run: cargo build --locked --release -p bkmt-cli --target ${{ matrix.target }}
+      - run: pnpm tauri build --target ${{ matrix.target }}
 
-      - name: Sync version from tag
+      - name: Stage installers and portable files
         shell: bash
         env:
-          VERSION: ${{ steps.version.outputs.version }}
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
         run: |
-          node - <<'NODE'
-          const fs = require("fs");
-          const version = process.env.VERSION;
+          VERSION="${RELEASE_TAG#v}"
+          node scripts/stage-release.mjs \
+            --target "${{ matrix.target }}" \
+            --platform "${{ matrix.platform }}" \
+            --arch "${{ matrix.arch }}" \
+            --version "$VERSION" \
+            --output release-stage
 
-          for (const file of ["package.json", "src-tauri/tauri.conf.json"]) {
-            const json = JSON.parse(fs.readFileSync(file, "utf8"));
-            json.version = version;
-            fs.writeFileSync(file, JSON.stringify(json, null, 2) + "\n");
-          }
-
-          const cargo = "src-tauri/Cargo.toml";
-          const cargoText = fs
-            .readFileSync(cargo, "utf8")
-            .replace(/^(version\s*=\s*")[^"]+(")/m, `$1${version}$2`);
-          fs.writeFileSync(cargo, cargoText);
-          NODE
-
-      - name: Build Tauri bundles
-        run: pnpm tauri build
-
-      - name: Collect release assets
-        shell: pwsh
+      - name: Smoke-test the staged CLI and desktop application
+        shell: bash
         env:
-          VERSION: ${{ steps.version.outputs.version }}
-          ASSET_OS: ${{ matrix.asset_os }}
-          ARCH: ${{ matrix.arch }}
-          APP_NAME: ${{ env.APP_NAME }}
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
         run: |
-          $ErrorActionPreference = "Stop"
-          New-Item -ItemType Directory -Force -Path release-assets | Out-Null
-          $prefix = "$env:APP_NAME-$env:VERSION-$env:ASSET_OS-$env:ARCH"
+          VERSION="${RELEASE_TAG#v}"
+          node scripts/smoke-release.mjs \
+            --root release-stage \
+            --platform "${{ matrix.platform }}" \
+            --version "$VERSION"
 
-          if ($env:ASSET_OS -eq "windows") {
-            Get-ChildItem "src-tauri/target/release/bundle/nsis" -Filter "*.exe" -ErrorAction SilentlyContinue |
-              ForEach-Object { Copy-Item -LiteralPath $_.FullName -Destination "release-assets/$prefix-setup$($_.Extension)" }
-            Get-ChildItem "src-tauri/target/release/bundle/msi" -Filter "*.msi" -ErrorAction SilentlyContinue |
-              ForEach-Object { Copy-Item -LiteralPath $_.FullName -Destination "release-assets/$prefix$($_.Extension)" }
-          } elseif ($env:ASSET_OS -eq "linux") {
-            Get-ChildItem "src-tauri/target/release/bundle/appimage" -Filter "*.AppImage" -ErrorAction SilentlyContinue |
-              ForEach-Object { Copy-Item -LiteralPath $_.FullName -Destination "release-assets/$prefix.AppImage" }
-            Get-ChildItem "src-tauri/target/release/bundle/deb" -Filter "*.deb" -ErrorAction SilentlyContinue |
-              ForEach-Object { Copy-Item -LiteralPath $_.FullName -Destination "release-assets/$prefix.deb" }
-            Get-ChildItem "src-tauri/target/release/bundle/rpm" -Filter "*.rpm" -ErrorAction SilentlyContinue |
-              ForEach-Object { Copy-Item -LiteralPath $_.FullName -Destination "release-assets/$prefix.rpm" }
-          } elseif ($env:ASSET_OS -eq "macos") {
-            Get-ChildItem "src-tauri/target/release/bundle/dmg" -Filter "*.dmg" -ErrorAction SilentlyContinue |
-              ForEach-Object { Copy-Item -LiteralPath $_.FullName -Destination "release-assets/$prefix.dmg" }
-          }
+      - name: Preserve staged file modes for artifact transfer
+        shell: bash
+        run: tar -cf release-stage.tar -C release-stage .
 
-          if (-not (Get-ChildItem release-assets -File)) {
-            throw "No release assets were collected"
-          }
-
-      - name: Upload release assets
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: release-assets-${{ matrix.asset_os }}-${{ matrix.arch }}
-          path: release-assets/*
+          name: release-${{ matrix.platform }}-${{ matrix.arch }}
+          path: BroKnowMyToolbox/release-stage.tar
           if-no-files-found: error
 
-  publish:
-    name: Publish GitHub Release
-    needs: build
+  publish-draft:
+    name: Assemble draft release
+    needs: [validate, build]
     runs-on: ubuntu-latest
-
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    defaults:
+      run:
+        working-directory: BroKnowMyToolbox
     steps:
-      - name: Resolve version
-        id: version
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          path: BroKnowMyToolbox
+          ref: ${{ needs.validate.outputs.revision }}
+
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          pattern: release-*
+          path: downloaded-release
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "22"
+
+      - name: Assemble checksums, manifest, and channel metadata
         shell: bash
+        env:
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
         run: |
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            VERSION="${{ inputs.version }}"
+          VERSION="${RELEASE_TAG#v}"
+          while IFS= read -r -d '' archive; do
+            tar -xf "$archive" -C "$(dirname "$archive")"
+          done < <(find ../downloaded-release -name release-stage.tar -print0)
+          node scripts/finalize-release-assets.mjs \
+            --input ../downloaded-release \
+            --output release-assets \
+            --version "$VERSION" \
+            --repository "${{ github.repository }}" \
+            --revision "$(git rev-parse HEAD)"
+
+      - name: Create or update the draft release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          if gh release view "$RELEASE_TAG" --json isDraft --jq .isDraft >/tmp/bkmt-release-draft 2>/dev/null; then
+            test "$(cat /tmp/bkmt-release-draft)" = "true" || {
+              echo "Refusing to overwrite published release $RELEASE_TAG" >&2
+              exit 1
+            }
+            existing_assets="$(gh release view "$RELEASE_TAG" --json assets --jq '.assets[].name')"
+            while IFS= read -r asset; do
+              test -z "$asset" || gh release delete-asset "$RELEASE_TAG" "$asset" --yes
+            done <<< "$existing_assets"
           else
-            VERSION="${GITHUB_REF_NAME#v}"
+            gh release create "$RELEASE_TAG" --draft --generate-notes --title "Bro Know My Toolbox $RELEASE_TAG"
           fi
-          VERSION="${VERSION#v}"
-          echo "version=${VERSION}" >> "${GITHUB_OUTPUT}"
-          echo "tag=v${VERSION}" >> "${GITHUB_OUTPUT}"
-
-      - name: Download release assets
-        uses: actions/download-artifact@v4
-        with:
-          pattern: release-assets-*
-          path: release-assets
-          merge-multiple: true
-
-      - name: Publish release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ steps.version.outputs.tag }}
-          name: BroKnowMyToolbox ${{ steps.version.outputs.version }}
-          files: release-assets/*
-          generate_release_notes: true
+          find release-assets -maxdepth 1 -type f -print0 | \
+            xargs -0 gh release upload "$RELEASE_TAG"
+          find release-assets/channel -type f -print0 | \
+            xargs -0 gh release upload "$RELEASE_TAG"

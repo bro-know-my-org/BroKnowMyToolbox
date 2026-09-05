@@ -1,0 +1,41 @@
+[package]
+publish = false
+name = "bkmt-desktop"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "Desktop adapter for Bro Know My Toolbox"
+
+[lib]
+name = "bkmt_desktop"
+crate-type = ["lib", "cdylib", "staticlib"]
+
+[[bin]]
+name = "bro-know-my-toolbox"
+path = "src/main.rs"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+bkmsa-tauri.workspace = true
+directories = "6"
+file-generator.workspace = true
+libc.workspace = true
+fs2.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+semver = "1"
+tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+tauri-plugin-opener = "2"
+tempfile.workspace = true
+toolbox-core.workspace = true
+url = "2"
+
+[dev-dependencies]
+tauri = { version = "2", features = ["test"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }

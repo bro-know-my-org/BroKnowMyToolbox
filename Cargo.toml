@@ -1,0 +1,35 @@
+[workspace]
+members = [
+  "apps/cli",
+  "apps/desktop/src-tauri",
+  "crates/file-generator",
+  "crates/toolbox-core",
+]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "Apache-2.0"
+repository = "https://github.com/bro-know-my-org/bro-know-my-toolbox"
+rust-version = "1.96"
+
+[workspace.dependencies]
+bkmsa-agent = { path = "../BroKnowMySparkAnalyzer/crates/bkmsa-agent", default-features = false, features = ["native-client"] }
+bkmsa-core = { path = "../BroKnowMySparkAnalyzer/crates/bkmsa-core" }
+bkmsa-tauri = { path = "../BroKnowMySparkAnalyzer/crates/bkmsa-tauri" }
+cap-std = "4.0.3"
+libc = "0.2"
+clap = { version = "4.5", features = ["derive"] }
+file-generator = { package = "bkmt-file-generator", path = "crates/file-generator" }
+fs2 = "0.4"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+tempfile = "3"
+toml = "0.9"
+toolbox-core = { path = "crates/toolbox-core" }
+
+[profile.release]
+lto = "thin"
+strip = true
