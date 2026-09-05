@@ -116,7 +116,10 @@ fn templates(
         .join("tools")
         .join("file-generator")
         .join("templates");
-    if !directory.exists() {
+    if !directory
+        .try_exists()
+        .map_err(|error| CliError::input("template_unreadable", error.to_string(), json))?
+    {
         return Ok(templates);
     }
     let entries = std::fs::read_dir(directory)
@@ -176,7 +179,7 @@ fn load_template(
     if !file_generator::valid_template_id(template_id) {
         return Err(CliError::input(
             "invalid_template_id",
-            "template id must use 1-64 lowercase ASCII letters, digits, '-' or '_'",
+            "template id must use 1-64 lowercase ASCII letters, digits, '-' or '_', excluding reserved Windows device names",
             json,
         ));
     }

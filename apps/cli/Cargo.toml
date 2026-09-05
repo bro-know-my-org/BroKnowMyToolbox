@@ -18,11 +18,13 @@ bkmsa-core.workspace = true
 clap.workspace = true
 directories = "6"
 file-generator.workspace = true
-libc.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 toolbox-core.workspace = true
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+
+[target.'cfg(unix)'.dependencies]
+libc.workspace = true
 
 [dev-dependencies]
 assert_cmd = "2.0"

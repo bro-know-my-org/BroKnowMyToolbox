@@ -19,6 +19,7 @@ bkmt spark analyze <REPORT> [--text] [--base-url URL] [--model MODEL] [--tempera
 
 - JSON 字段使用稳定英文标识，不参与翻译。
 - 错误包含稳定 code、可选结构化 details 和展示层消息。
+- 参数解析失败（包括空目标目录）在 `--json` 模式下同样输出 JSON 错误（`invalid_arguments`、退出码 2）；`--help` 和 `--version` 保持人类可读输出。
 - 成功输出写 stdout，诊断写 stderr。
 - `0` 表示完整成功；输入错误、授权拒绝、部分执行失败和内部错误使用不同的文档化退出码。
 - 新增 JSON 字段允许向后兼容；删除、改名或改变语义需要主版本决策。
