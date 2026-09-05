@@ -1,29 +1,27 @@
-# Logs
-logs
+/target/
+/node_modules/
+**/node_modules/
+/.pnpm-store/
+**/dist/
+**/.vite/
+**/src-tauri/gen/
+/coverage/
+/downloaded-release/
+/release-assets/
+/release-stage/
 *.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
-node_modules
-dist
-dist-ssr
-src-tauri/target
-src-tauri/gen
-*.local
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
 .DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+Thumbs.db
 
-# Legacy external plugin folder should not be used by the built-in toolbox line.
-/plugins
+# Tauri signing and local configuration
+*.key
+*.pfx
+*.p12
+.env
+.env.*
+!.env.example
+
+# Runtime data must never enter source control
+/data/
+**/data/
+portable.bkmt

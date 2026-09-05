@@ -1,0 +1,32 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "main-window",
+  "description": "Baseline capability for the main application window",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "bkmsa-tauri:allow-analyzer-load-report-bytes",
+    "bkmsa-tauri:allow-analyzer-load-text-report",
+    "bkmsa-tauri:allow-analyzer-fetch-report",
+    "bkmsa-tauri:allow-analyzer-execute-tool",
+    "bkmsa-tauri:allow-analyzer-release-report",
+    "bkmsa-tauri:allow-analyzer-run-analysis",
+    "bkmsa-tauri:allow-analyzer-cancel-analysis",
+    "bkmsa-tauri:allow-analyzer-ask-follow-up",
+    "bkmsa-tauri:allow-analyzer-test-ai-connection",
+    "bkmsa-tauri:allow-analyzer-list-ai-models",
+    "bkmsa-tauri:allow-analyzer-store-api-key",
+    "bkmsa-tauri:allow-analyzer-load-api-key",
+    "bkmsa-tauri:allow-analyzer-delete-api-key",
+    "bkmsa-tauri:allow-save-export-file",
+    "dialog:allow-save",
+    {
+      "identifier": "opener:allow-open-url",
+      "allow": [
+        {
+          "url": "https://github.com/bro-know-my-org/BroKnowMyToolbox/releases/tag/*"
+        }
+      ]
+    }
+  ]
+}
