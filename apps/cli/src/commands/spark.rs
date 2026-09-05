@@ -7,6 +7,18 @@ use crate::runtime::{check_tool_capability, resolve_data_root};
 
 const MAX_SPARK_REPORT_BYTES: u64 = 64 * 1024 * 1024;
 
+fn is_regular_report(metadata: &std::fs::Metadata) -> bool {
+    #[cfg(windows)]
+    {
+        use std::os::windows::fs::MetadataExt;
+        const FILE_ATTRIBUTE_REPARSE_POINT: u32 = 0x400;
+        if metadata.file_attributes() & FILE_ATTRIBUTE_REPARSE_POINT != 0 {
+            return false;
+        }
+    }
+    metadata.is_file()
+}
+
 fn open_report(source: &std::path::Path) -> std::io::Result<std::fs::File> {
     let mut options = std::fs::OpenOptions::new();
     options.read(true);
@@ -51,7 +63,7 @@ fn load_report(
             json,
         )
     })?;
-    if !metadata.is_file() {
+    if !is_regular_report(&metadata) {
         return Err(CliError::input(
             "invalid_report_source",
             "Spark report source must be a regular file",

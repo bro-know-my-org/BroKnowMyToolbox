@@ -65,6 +65,8 @@ bkmt consent allow spark-analyzer network:spark
 bkmt consent allow spark-analyzer credentials:ai
 ```
 
+本地报告限普通文件且不超过 64 MiB；Unix 以 no-follow/nonblocking 打开，Windows 打开 reparse point 本身并检查同一文件句柄的 reparse 属性。符号链接、目录及特殊文件不会作为报告内容读取。
+
 首版 CLI 从 `BKMT_SPARK_API_KEY` 读取 API Key，并兼容 Spark Analyzer 的 `BKMSA_API_KEY` 环境变量；前者优先。凭据授权不会把环境变量内容复制进普通配置文件。`--base-url`、`--model`、`--temperature` 和 `--max-rounds` 控制本次分析，其中最大轮数必须为 1 到 64。
 
 Spark 命令直接调用 `bkmsa-core` 和 `bkmsa-agent`，不会启动外部 `bkmsa` 进程。JSON 模式下，授权和输入错误写入 stderr，并沿用下表退出码。

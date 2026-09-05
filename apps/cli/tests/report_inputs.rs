@@ -67,3 +67,30 @@ fn fifo_report_is_rejected_without_waiting_for_a_writer() {
     assert_eq!(unsafe { libc::mkfifo(path.as_ptr(), 0o600) }, 0);
     assert_rejected(&fifo, "invalid_report_source");
 }
+
+#[cfg(windows)]
+#[test]
+fn windows_report_reparse_points_are_rejected_even_when_dangling() {
+    let root = tempfile::tempdir().unwrap();
+    let source = root.path().join("report.txt");
+    std::fs::write(&source, "private report").unwrap();
+    let link = root.path().join("link.txt");
+    std::os::windows::fs::symlink_file(&source, &link)
+        .expect("Windows test runner requires symlink privileges or Developer Mode");
+    assert_rejected(&link, "invalid_report_source");
+    std::fs::remove_file(source).unwrap();
+    assert_rejected(&link, "invalid_report_source");
+}
+
+#[cfg(windows)]
+#[test]
+fn windows_directory_reparse_points_are_not_report_files() {
+    let root = tempfile::tempdir().unwrap();
+    let source = root.path().join("directory");
+    std::fs::create_dir(&source).unwrap();
+    let link = root.path().join("directory-link");
+    std::os::windows::fs::symlink_dir(source, &link)
+        .expect("Windows test runner requires symlink privileges or Developer Mode");
+    // Opening directories without FILE_FLAG_BACKUP_SEMANTICS is rejected by Windows.
+    assert_rejected(&link, "report_read_failed");
+}

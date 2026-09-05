@@ -13,6 +13,10 @@
 
 ## 基线意见跟踪
 
+报告 Windows 边界批次已完成实现：同一打开句柄的元数据若含 reparse 属性则在读取前拒绝；新增有效/悬空文件链接及目录链接回归，要求 Windows runner 具备符号链接权限或 Developer Mode，不静默跳过。OCR 会话 `ac9480f3-b67e-4b0c-a3b5-4e2ec04da78c` 零意见，本机 CLI 38 项测试与 Clippy 通过；当前只有 Linux target，新增 Windows 测试仍须真实 CI 验证。
+
+文档批次后另补跑整个 Rust 工作区：129 项通过；唯一默认忽略项 `config_child_writer` 是跨进程测试辅助入口，由父测试带 `--ignored --exact` 和专用环境变量显式执行，不属于漏跑的产品验收。
+
 文档解析批次已完成：以固定开发依赖 `mdast-util-from-markdown 2.0.3` 和 `github-slugger 2.0.0` 替代手写行级正则，覆盖转义、括号标题、重复/跨行引用定义、跨行代码、Setext 与分隔线、嵌套标题及完整 fragment。10 项文档回归和仓库链接检查通过；`pnpm test` 共 72 项、lint/typecheck/build/format 及离线冻结安装通过。OCR 会话 `2091e1ad-dddc-4d15-a4d4-4c9676dc7691` 对五个选中文件零意见；未改变应用运行时依赖。
 
 模板大小批次已完成：保存不再追加换行，原始 UTF-8 输入可达到完整 1 MiB；边界以下、恰好边界、超限拒绝且保留旧文件均有 GUI adapter 回归，CLI `@boundary` 同样验证读取与超限错误。两轮 OCR 均零意见，最终会话 `15cf4112-44aa-4e1d-b350-2205fff3750d`；相关测试、Clippy、格式和文档检查通过。
@@ -46,7 +50,7 @@ RPM 意见已取得部分反证：本机 `tauri-bundler 2.9.4` 的 `src/bundle/l
 | 1      | DesktopState 显式构造路径校验                        | 已修复，见数据路径批次                                     |
 | 2      | 未消费的前端版本常量                                 | 已清理，见前端构建清理批次                                 |
 | 3–4    | CLI Unix 依赖作用域、JSON 参数错误                   | 已修复，见 CLI 批次                                        |
-| 5      | Spark 报告异常输入测试                               | 已补充；Windows reparse 实测待补                           |
+| 5      | Spark 报告异常输入测试                               | 已补齐 Windows reparse 用例及检查，实测待 CI               |
 | 6      | CLI 模板目录探测错误                                 | 已修复，见 CLI 批次                                        |
 | 7      | CLI 空目标目录被接受                                 | 已排除该判断：Clap 原本拒绝；JSON 错误格式已修复并覆盖测试 |
 | 8      | 模板 ID 诊断遗漏 Windows 保留名                      | 已修复，见 CLI 批次                                        |
