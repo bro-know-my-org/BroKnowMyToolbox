@@ -34,13 +34,20 @@ pub async fn check_for_update(
         .json::<GithubRelease>()
         .await
         .map_err(|error| format!("invalid update response: {error}"))?;
-    let latest_text = release.tag_name.trim_start_matches('v');
+    let latest_text = release
+        .tag_name
+        .strip_prefix('v')
+        .unwrap_or(&release.tag_name);
     let latest = semver::Version::parse(latest_text)
         .map_err(|error| format!("invalid release version: {error}"))?;
     let release_url = url::Url::parse(&release.html_url)
         .map_err(|error| format!("invalid release URL: {error}"))?;
-    if release_url.scheme() != "https" || release_url.host_str() != Some("github.com") {
-        return Err("release URL must use HTTPS on github.com".to_string());
+    let expected_url = format!(
+        "https://github.com/bro-know-my-org/BroKnowMyToolbox/releases/tag/{}",
+        release.tag_name,
+    );
+    if release_url.as_str() != expected_url {
+        return Err("release URL must use HTTPS on github.com for the canonical Toolbox repository and release tag".to_string());
     }
 
     Ok(UpdateCheckResult {
@@ -54,7 +61,7 @@ pub async fn check_for_update(
 #[tauri::command]
 pub async fn check_for_update_command() -> Result<UpdateCheckResult, String> {
     check_for_update(
-        "https://api.github.com/repos/bro-know-my-org/bro-know-my-toolbox/releases/latest",
+        "https://api.github.com/repos/bro-know-my-org/BroKnowMyToolbox/releases/latest",
         toolbox_core::WORKSPACE_VERSION,
     )
     .await

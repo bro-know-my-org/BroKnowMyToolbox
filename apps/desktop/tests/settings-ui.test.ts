@@ -51,7 +51,7 @@ beforeEach(() => {
         currentVersion: "0.1.0",
         latestVersion: "0.2.0",
         releaseUrl:
-          "https://github.com/bro-know-my-org/bro-know-my-toolbox/releases/tag/v0.2.0",
+          "https://github.com/bro-know-my-org/BroKnowMyToolbox/releases/tag/v0.2.0",
       });
     return Promise.reject(new Error(`unexpected command ${command}`));
   });
@@ -141,7 +141,7 @@ test("manual update check opens the validated release download page", async () =
   await fireEvent.click(screen.getByRole("button", { name: "打开下载页面" }));
 
   expect(native.openUrl).toHaveBeenCalledWith(
-    "https://github.com/bro-know-my-org/bro-know-my-toolbox/releases/tag/v0.2.0",
+    "https://github.com/bro-know-my-org/BroKnowMyToolbox/releases/tag/v0.2.0",
   );
 });
 

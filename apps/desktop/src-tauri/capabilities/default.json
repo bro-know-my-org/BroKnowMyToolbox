@@ -24,7 +24,7 @@
       "identifier": "opener:allow-open-url",
       "allow": [
         {
-          "url": "https://github.com/bro-know-my-org/bro-know-my-toolbox/releases/**"
+          "url": "https://github.com/bro-know-my-org/BroKnowMyToolbox/releases/tag/*"
         }
       ]
     }

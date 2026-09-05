@@ -11,7 +11,7 @@ resolver = "2"
 version = "0.1.0"
 edition = "2024"
 license = "Apache-2.0"
-repository = "https://github.com/bro-know-my-org/bro-know-my-toolbox"
+repository = "https://github.com/bro-know-my-org/BroKnowMyToolbox"
 rust-version = "1.96"
 
 [workspace.dependencies]

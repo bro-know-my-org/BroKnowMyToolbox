@@ -17,4 +17,4 @@ All notable changes to Bro Know My Toolbox are documented here. The project foll
 - Spark network, credential, and export operations are enforced by a host authorizer in Rust.
 - Spark keyring platform backends and cross-process regression tests are prepared upstream; release remains blocked until the fixed upstream version passes the three-platform CI and is published.
 
-[Unreleased]: https://github.com/bro-know-my-org/bro-know-my-toolbox/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/bro-know-my-org/BroKnowMyToolbox/compare/v0.0.3...HEAD
