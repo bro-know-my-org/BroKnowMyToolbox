@@ -82,7 +82,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libayatana-appindicator3-dev libwebkit2gtk-4.1-dev
+          sudo apt-get install -y libayatana-appindicator3-dev libwebkit2gtk-4.1-dev dosfstools exfatprogs
 
       - name: Check Rust formatting
         if: runner.os == 'Linux'
@@ -93,6 +93,10 @@ jobs:
 
       - name: Test Rust workspace
         run: cargo test --locked --workspace --all-targets
+
+      - name: Test creation on real FAT and exFAT filesystems
+        if: runner.os == 'Linux'
+        run: bash scripts/test-removable-filesystems.sh
 
       - name: Lint Rust workspace
         run: cargo clippy --locked --workspace --all-targets -- -D warnings

@@ -18,6 +18,8 @@
 
 合并前要求 format、lint、类型检查、文档链接、Rust check、单元测试和接口集成测试。发布 workflow 执行质量门禁、四目标构建、staged CLI/桌面启动冒烟和发布资产整理；它尚未驱动真实 WebView 内部的完整 GUI 操作。校验和及发布清单生成器已有脚本测试；Linux x86_64 已有本机真实 release staging/smoke 证据，其余目标仍须由真实 tag run 产生。
 
+Linux PR CI 另通过 `scripts/test-removable-filesystems.sh` 在 runner 临时目录创建全新的普通磁盘镜像，格式化并 loop 挂载为 FAT32/exFAT，确认实际挂载类型、可写且不支持硬链接后，运行并发新建与既有目录不替换测试。脚本不接受外部设备路径，仅在 GitHub Actions 环境运行，退出时卸载镜像；实际通过记录仍须由 CI 产生，不能用脚本存在代替文件系统验收。
+
 没有 macOS 实机。GitHub macOS runner 可以验证编译和自动冒烟，但真实交互、Gatekeeper、签名、公证及升级必须标为未验证，直到获得设备和凭据。
 
 ## 产物
