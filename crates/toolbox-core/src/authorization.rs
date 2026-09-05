@@ -130,21 +130,36 @@ impl FileConsentStore {
     }
 
     fn load(&self) -> Result<ConsentFile, String> {
-        let initial = match std::fs::symlink_metadata(&self.data_path) {
-            Ok(metadata) => metadata,
+        let mut options = OpenOptions::new();
+        options.read(true);
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::OpenOptionsExt;
+            options.custom_flags(libc::O_NOFOLLOW | libc::O_NONBLOCK);
+        }
+        #[cfg(windows)]
+        {
+            use std::os::windows::fs::OpenOptionsExt;
+            const FILE_FLAG_OPEN_REPARSE_POINT: u32 = 0x0020_0000;
+            options.custom_flags(FILE_FLAG_OPEN_REPARSE_POINT);
+        }
+        let mut file = match options.open(&self.data_path) {
+            Ok(file) => file,
             Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
                 return Ok(ConsentFile::default());
             }
-            Err(error) => return Err(format!("failed to inspect consent storage: {error}")),
+            Err(error) => return Err(format!("failed to read consent storage: {error}")),
         };
-        if !initial.file_type().is_file() {
-            return Err("consent storage must be a regular file".to_string());
-        }
-        let mut file = File::open(&self.data_path)
-            .map_err(|error| format!("failed to read consent storage: {error}"))?;
         let metadata = file
             .metadata()
             .map_err(|error| format!("failed to inspect consent storage: {error}"))?;
+        #[cfg(windows)]
+        {
+            use std::os::windows::fs::MetadataExt;
+            if metadata.file_attributes() & 0x400 != 0 {
+                return Err("consent storage must not be a reparse point".to_string());
+            }
+        }
         if !metadata.is_file() || metadata.len() > MAX_CONSENT_FILE_BYTES {
             return Err("consent storage exceeds 64 KiB or is not a regular file".to_string());
         }
