@@ -6,12 +6,16 @@
 
 2026-09-05 复核：GitHub API 身份验证返回 401，需维护者在本机恢复登录。Spark 仍为 `7a04edc`，所需修复仍在独立工作树中，公开 npm 和 Rust crates 最新版本均为 `0.1.1`，不包含这些修复。跨仓处理尚待授权；不能把本地 sibling 依赖直接当成可发布版本。技术阻断详见 [风险](./risks.md)。
 
+另以禁止交互的 `git push --dry-run origin HEAD:refs/heads/refactor/rebuild` 验证 Git HTTPS 传输：返回无法读取 Username（exit 128），没有真实推送或远程变更；不能绕过 GitHub API 的认证问题直接完成 Git 推送。
+
 ## 已完成批次
 
 - 基线 `0289b0a`：以 ReBuild 源码接续正式仓库历史，未推送。基线 OCR 会话 `b687718d-7760-416b-940f-088c506ba124` 提出 39 条意见，尚未全部收口。
 - CLI 修复 `b1a409d`：统一参数解析的 JSON 错误，保留 help/version 输出；模板目录读取错误不再被忽略；补齐报告大小、符号链接和 FIFO 输入测试。OCR 两轮，最终会话 `21e11040-129c-4004-8449-eb2c5a1aa4df` 零意见；本机 CLI 32 项测试、Clippy、格式及文档检查通过。Windows/macOS 实测仍须 CI 补齐。
 
 ## 基线意见跟踪
+
+覆盖版本批次完成了 #35 的版本识别部分：共享 `revision` 模块通过受约束的单个 no-follow 句柄计算内容 SHA-256 与文件身份/状态，固定缓冲区并限制到打开时长度加一字节，读取前后检查元数据。回归先复现旧实现对同尺寸、恢复 mtime 的编辑给出相同版本值，再验证修复后拒绝过期覆盖；补齐同内容替换文件、GUI `plan_changed` 及 GUI/CLI 共享的目录约束测试。首轮 OCR 指出需重试 `Interrupted`，已修复；最终会话 `4e9e74f3-5bb8-4c13-bc59-e69caf79efe3` 对六个选中文件零意见。相关三个 Rust crate 的 115 项测试、Clippy、文档和格式检查通过；Windows 文件生成器及其测试的交叉 Clippy 通过，非实机执行证据。最终检查与替换之间的竞态尚未解决，#35 不标完成。
 
 新建文件安装批次已完成实现：平台差异集中在私有 `install` 模块，Linux/macOS 使用父目录句柄相对的 no-replace rename，Windows 使用禁止替换的 `FileRenameInfo`；不支持该 Unix 系统调用时保留安全硬链接回退。八个并发创建者恰好一个成功、目标目录在预览后出现时不被替换，均有真实文件系统测试。Linux 三个相关 crate 共 110 项测试及 Clippy 通过；OCR 会话 `5dcd0ba2-3e07-471c-b3c6-951ce862c957` 对五个选中文件零意见。Linux `strace` 故障注入分别令 `linkat` 返回 `EOPNOTSUPP`、令 `renameat2` 返回 `ENOSYS`，两项新测试在原生安装和硬链接回退路径均通过；不将此证据等同于 FAT/exFAT 实测。本机没有可用的 FAT/exFAT FUSE 驱动，实际可移动文件系统及 Windows/macOS 执行仍待补验。覆盖操作的版本识别和最终替换竞态（#35）未在此批次解决。
 
@@ -77,7 +81,7 @@ RPM 意见已取得部分反证：本机 `tauri-bundler 2.9.4` 的 `src/bundle/l
 | 32     | 损坏用户模板恢复                                     | 已修复，见模板目录批次                                     |
 | 33     | 用户模板 1 MiB 边界                                  | 已修复，见模板大小批次                                     |
 | 34     | plan_changed 后保留过期 GUI 预览                     | 已修复，见生成计划界面批次                                 |
-| 35     | 覆盖 revision/最终替换竞态                           | 待核实安全语义和跨平台实现                                 |
+| 35     | 覆盖 revision/最终替换竞态                           | 已加强版本识别；最终替换竞态仍未解决                       |
 | 36     | 无 hard-link 文件系统的新建文件安装                  | 已实现 no-replace 安装，跨平台及实际文件系统验证待补齐     |
 | 37–39  | 生成计划路径冲突复杂度、Windows 文件名、已有目录冲突 | 已修复，见生成路径批次                                     |
 

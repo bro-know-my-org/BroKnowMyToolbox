@@ -7,6 +7,7 @@ use cap_std::ambient_authority;
 use cap_std::fs::{Dir, OpenOptions};
 
 mod install;
+mod revision;
 pub mod templates;
 
 const MAX_RENDERED_OUTPUT_BYTES: usize = 64 * 1024 * 1024;
@@ -404,11 +405,21 @@ impl FileGenerator {
                 .checked_add(content.len())
                 .filter(|total| *total <= MAX_RENDERED_OUTPUT_BYTES)
                 .ok_or(GenerationError::RenderedOutputTooLarge)?;
+            let target_revision = if action == FileAction::Overwrite {
+                let observed = Dir::open_ambient_dir(&request.destination, ambient_authority())
+                    .and_then(|root| revision::observe(&root, &relative_path))
+                    .map_err(|error| {
+                        GenerationError::PathInspection(relative_path.clone(), error.to_string())
+                    })?;
+                Some(observed.revision)
+            } else {
+                target_metadata.as_ref().map(metadata_revision)
+            };
             files.push(PlannedFile {
                 relative_path,
                 content,
                 action,
-                target_revision: target_metadata.as_ref().map(metadata_revision),
+                target_revision,
             });
         }
 
@@ -474,21 +485,19 @@ fn write_file_atomically(destination: &Dir, file: &PlannedFile) -> FileOutcome {
         Err(error) => return FileOutcome::Failed(error.to_string()),
     };
     let overwrite_permissions = if file.action == FileAction::Overwrite {
-        match parent.symlink_metadata(file_name) {
-            Ok(metadata)
-                if file.target_revision.as_deref() == Some(&cap_metadata_revision(&metadata)) =>
-            {
-                Some(metadata.permissions())
+        match revision::observe(&parent, Path::new(file_name)) {
+            Ok(observed) if file.target_revision.as_deref() == Some(&observed.revision) => {
+                Some(observed.permissions)
             }
             Ok(_) => {
                 return FileOutcome::Failed(
                     "planned overwrite target changed after preview".to_string(),
                 );
             }
-            Err(_) => {
-                return FileOutcome::Failed(
-                    "planned overwrite target no longer exists".to_string(),
-                );
+            Err(error) => {
+                return FileOutcome::Failed(format!(
+                    "cannot verify planned overwrite target: {error}"
+                ));
             }
         }
     } else {
@@ -535,9 +544,8 @@ fn write_file_atomically(destination: &Dir, file: &PlannedFile) -> FileOutcome {
     }
 
     if file.action == FileAction::Overwrite {
-        match parent.symlink_metadata(file_name) {
-            Ok(metadata)
-                if file.target_revision.as_deref() == Some(&cap_metadata_revision(&metadata)) => {}
+        match revision::observe(&parent, Path::new(file_name)) {
+            Ok(observed) if file.target_revision.as_deref() == Some(&observed.revision) => {}
             _ => {
                 let _ = parent.remove_file(&temporary_name);
                 return FileOutcome::Failed(
@@ -584,25 +592,6 @@ fn metadata_revision(metadata: &std::fs::Metadata) -> String {
     } else if metadata.file_type().is_dir() {
         "dir"
     } else if metadata.file_type().is_symlink() {
-        "symlink"
-    } else {
-        "other"
-    };
-    format!("{kind}:{}:{modified}", metadata.len())
-}
-
-fn cap_metadata_revision(metadata: &cap_std::fs::Metadata) -> String {
-    let modified = metadata
-        .modified()
-        .ok()
-        .and_then(|value| value.into_std().duration_since(std::time::UNIX_EPOCH).ok())
-        .map(|value| value.as_nanos())
-        .unwrap_or_default();
-    let kind = if metadata.is_file() {
-        "file"
-    } else if metadata.is_dir() {
-        "dir"
-    } else if metadata.is_symlink() {
         "symlink"
     } else {
         "other"

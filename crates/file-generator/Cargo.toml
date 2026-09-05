@@ -9,6 +9,8 @@ description = "Safe template planning and execution for Bro Know My Toolbox"
 
 [dependencies]
 cap-std.workspace = true
+cap-fs-ext = "4.0.3"
+sha2 = "0.10"
 serde.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true
