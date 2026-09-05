@@ -6,10 +6,11 @@
 
 2026-09-05 更新：[Spark PR #1](https://github.com/bro-know-my-org/BroKnowMySparkAnalyzer/pull/1) 已在[三平台 CI](https://github.com/bro-know-my-org/BroKnowMySparkAnalyzer/actions/runs/33966260002)通过后合并，merge revision 为 `0befcc1db459f938e561d34c203252096a4cca3e`，tree 与已审查的 `f262fc5` 一致。`v0.1.2` tag 指向该 merge；[发布流程](https://github.com/bro-know-my-org/BroKnowMySparkAnalyzer/actions/runs/33967063600)已完成四目标构建、四个 Rust crates 与 npm 发布，[公开 Release](https://github.com/bro-know-my-org/BroKnowMySparkAnalyzer/releases/tag/v0.1.2)具有 12 个已上传资产，包含两种 macOS 架构的 DMG。Spark 未来的大重构仍不在本轮范围。Toolbox 尚未合并或发布，剩余门禁见下方清单。
 
-认证恢复后，Git HTTPS 的 fetch/push 仍因直连 `github.com:443` 超时失败。使用官方 Git Database API 上传原始 blob/tree/commit 并逐个核对 SHA，Spark 四个提交及 ReBuild 的 25 个提交均保持原哈希，未改写历史或绕过 CI。Toolbox 远程 `refactor/rebuild` 当前上传至 `2cfbe2f`，本轮后续依赖切换尚未上传。npm/Cargo 发布凭据已由成功的 Spark 发布流程验证，没有读取或记录 token。
+认证恢复后，Git HTTPS 的 fetch/push 仍因直连 `github.com:443` 超时失败。使用官方 Git Database API 上传原始 blob/tree/commit 并逐个核对 SHA，Spark 四个提交及 ReBuild 历史均保持原哈希，未改写历史或绕过 CI。Toolbox 远程 `refactor/rebuild` 已快进至 `3cfb453`，[草稿 PR #1](https://github.com/bro-know-my-org/BroKnowMyToolbox/pull/1) 已创建；[首次 CI](https://github.com/bro-know-my-org/BroKnowMyToolbox/actions/runs/33969746418)前端因本进度文档格式失败，后续格式修正须由 CI 复核，Rust 检查仍在运行。npm/Cargo 发布凭据已由成功的 Spark 发布流程验证，没有读取或记录 token。
 
 ## 已完成批次
 
+- 独立构建与补充 GUI 验收：从 `3cfb453` 导出到 `/tmp/bkmt-independent.pGLnQk`，无相邻 Spark 源码；使用官方 npm 源冻结安装、73 项测试、前端构建及 locked/offline Rust 全目标 check 通过。Cargo 复用 registry/target 缓存，不声称无缓存全新编译。依赖切换最终 OCR 会话 `931b1914-7ed6-4524-96b8-41270f8b3aca` 同样对 5 文件零意见。真实 860px 布局、本机假 AI 分析与全屏通过，但发现图片导出 PNG 空白；[补充证据](./validation/linux-export-20260905.md)记录四次失败及单变量定位，修复和新构建复验前不得关闭该门禁。
 - Spark 正式依赖切换：npm 官方 registry 的 `0.1.2` tarball 通过 SHA-512 integrity 校验，三个发布 UI 文件 SHA-256 与[此前 WebView 验收](./validation/linux-webview-20260905.md)完全相同。官方 crates index 和实际 `bkmsa-tauri 0.1.2` 下载包的 SHA-256 均为 `a7b9f803102e062d2c78eadc9e4f312b9cd94760eaf1e91b7f30f1d4200a960c`。Toolbox npm/Cargo manifest 精确固定 `0.1.2`，锁文件改为 registry 包，CI/release 不再检出 Spark。因本机 TUNA 尚未同步，Cargo 验证仅在命令级指定 rsproxy，未改变全局或仓库源配置；npm 安装指定官方源。切换后 73 项前端/脚本测试、Rust 全工作区全目标 check/test/Clippy、lint、类型检查、构建、格式及离线冻结安装通过。OCR 会话 `8af0250a-996b-487e-b6e2-a7492b58f325` 对 5 个选中文件零意见；文档人工核对。pnpm 自动更新中的无关 `ansi-styles` 漂移已恢复；独立 checkout 与远程 CI 仍待完成。
 - 真实 WebView 接入验收：修复 SA 全局样式污染宿主（Spark `1b286b0`）及运行时/前端插件名与生成权限命名空间错配（Spark `f262fc5`）。两批 OCR 均零意见，回归先红后绿；Toolbox IPC 测试改用真实生成 ACL，不再手工放行。最终 debug 构建已实测文件预览/写入、过期覆盖拒绝、Spark 本地文本加载、凭据拒绝、深色/中文同步和重启持久化；标题对比度由 `1.18:1` 恢复到浅色 `15.99:1`、深色 `16.72:1`。[完整证据](./validation/linux-webview-20260905.md)记录 revision、依赖/二进制哈希、测试、隔离环境与未验证范围。SA 大重构仍明确延期；这不是完整 GUI 验收或发布完成，GitHub 认证复查仍为 401。
 - Toolbox 本地联动验证：根 Cargo 锁文件中的三个 sibling Spark 包跟随 `ee6e71e` 升为 `0.1.2`，仍是开发期 path/file 依赖。冻结安装曾复用旧 UI 快照；将根 `node_modules` 可恢复移到 `/tmp/bkmt-dependency-refresh.okWXhS/node_modules` 后，干净离线冻结安装重新导入 443 个包。实际安装版本为 `0.1.2`，`package.json`、`dist/index.js`、`style.css`、`tauri.js`、`adapter.d.ts` 均与 sibling SHA-256 相同；主 JS 为 `43c1b6ad9f9f7578ab64ec9d58078f3860af59224159b12c6fdbaba4ebac5091`。ReBuild 的 145 项 Rust 测试和 Clippy 通过，刷新 UI 后的 73 项前端/脚本测试、构建、lint、类型检查通过。默认忽略的 Rust helper 仍由父进程测试显式执行。没有更新安装包或完成真实 WebView 交互验收，原 Linux 产物证据仍对应其记录的旧 revision。
@@ -72,7 +73,7 @@ RPM 意见已取得实际反证：锁定 Tauri CLI `2.11.4` 在本机没有 `rpm
 | 7      | CLI 空目标目录被接受                                 | 已排除该判断：Clap 原本拒绝；JSON 错误格式已修复并覆盖测试 |
 | 8      | 模板 ID 诊断遗漏 Windows 保留名                      | 已修复，见 CLI 批次                                        |
 | 9      | 缺少根 Cargo.lock                                    | 误报：基线已跟踪根锁文件                                   |
-| 10、16 | CI/release 使用未固定的 Spark checkout               | 已切换到精确固定的已发布 0.1.2；不再检出 Spark            |
+| 10、16 | CI/release 使用未固定的 Spark checkout               | 已切换到精确固定的已发布 0.1.2；不再检出 Spark             |
 | 11–15  | 文档链接解析的转义、标题、代码跨度和片段边界         | 已修复，见文档解析批次                                     |
 | 17     | Linux RPM 构建依赖                                   | 已排除必需 rpmbuild 的判断；实际 RPM 构建及头部校验通过    |
 | 18     | 非 UTF-8 数据路径诊断                                | 已修复，见诊断批次                                         |
