@@ -27,6 +27,8 @@ Spark Analyzer 工作树已经显式启用三个目标平台的 `keyring` backen
 
 本地报告由 WebView 的用户文件选择直接产生 bytes，Spark plugin 不接受或读取任意路径；远程报告、AI provider、keyring 和导出文件分别在真正执行操作的 Rust command 前检查能力。
 
+语言包读取以选定的数据根为信任边界，通过持有的目录句柄依次打开 `locales` 和语言文件，拒绝两级路径中的符号链接。读取普通文件前验证句柄类型并限制为 1 MiB；Unix 使用非阻塞打开，避免 FIFO 等特殊文件占用读取任务。
+
 版本检查是应用级、用户主动触发的独立网络入口，只访问固定 GitHub Releases API。结果中的下载页必须是 `https://github.com`，应用只在用户再次点击后打开页面，不下载或执行内容。
 
 ## 隐私

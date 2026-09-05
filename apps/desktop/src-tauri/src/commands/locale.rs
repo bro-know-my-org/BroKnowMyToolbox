@@ -1,9 +1,39 @@
 use std::collections::BTreeMap;
 use std::io::Read;
 
+use cap_fs_ext::{DirExt, FollowSymlinks, OpenOptionsFollowExt};
+use cap_std::fs::{Dir, OpenOptions};
+
 use crate::{CommandError, DesktopState};
 
 const MAX_LOCALE_PACK_BYTES: u64 = 1024 * 1024;
+
+fn open_locale(state: &DesktopState, locale: &str) -> std::io::Result<std::fs::File> {
+    // The configured data root is trusted; everything below it is opened
+    // relative to held directory handles without following symbolic links.
+    let root = Dir::open_ambient_dir(&state.data_root, cap_std::ambient_authority())?;
+    let locales = root.open_dir_nofollow("locales")?;
+    let mut options = OpenOptions::new();
+    options.read(true).follow(FollowSymlinks::No);
+    #[cfg(unix)]
+    {
+        use cap_std::fs::OpenOptionsExt;
+        options.custom_flags(libc::O_NONBLOCK);
+    }
+    let file = locales
+        .open_with(format!("{locale}.json"), &options)?
+        .into_std();
+    #[cfg(windows)]
+    {
+        use std::os::windows::fs::MetadataExt;
+        if file.metadata()?.file_attributes() & 0x400 != 0 {
+            return Err(std::io::Error::other(
+                "locale pack must not be a reparse point",
+            ));
+        }
+    }
+    Ok(file)
+}
 
 pub fn load_locale_override(
     state: &DesktopState,
@@ -19,11 +49,7 @@ pub fn load_locale_override(
             message: "locale must contain only letters, numbers, '-' or '_'".to_string(),
         });
     }
-    let path = state
-        .data_root
-        .join("locales")
-        .join(format!("{locale}.json"));
-    let file = match std::fs::File::open(&path) {
+    let file = match open_locale(state, locale) {
         Ok(file) => file,
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
             return Ok(BTreeMap::new());

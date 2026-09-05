@@ -21,6 +21,8 @@ tauri-build = { version = "2", features = [] }
 
 [dependencies]
 bkmsa-tauri.workspace = true
+cap-std.workspace = true
+cap-fs-ext = "4.0.3"
 directories = "6"
 file-generator.workspace = true
 libc.workspace = true
